@@ -381,6 +381,306 @@ document.getElementById('addMagnet').addEventListener('click', () => {
     document.getElementById('imageUpload').click();
 });
 
+// ========== IMAGE MODAL SYSTEM ==========
+let currentImageData = null;
+let selectedShape = 'square';
+let cuttingState = {
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    precision: 0,
+    rarity: 'common',
+    value: 0
+};
+let cuttingCanvas, cuttingGameCanvas;
+let isCutting = false;
+
+document.getElementById('imageUpload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            currentImageData = event.target.result;
+            openImageModal();
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+function openImageModal() {
+    document.getElementById('imageModal').style.display = 'flex';
+    setTimeout(() => {
+        cuttingCanvas = document.getElementById('cuttingCanvas');
+        cuttingGameCanvas = document.getElementById('cuttingGameCanvas');
+        updateCuttingPreview();
+        initCuttingGame();
+    }, 100);
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    currentImageData = null;
+    cuttingState = {
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        precision: 0,
+        rarity: 'common',
+        value: 0
+    };
+}
+
+function selectShape(shape) {
+    selectedShape = shape;
+    document.querySelectorAll('.shape-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-shape="${shape}"]`).classList.add('active');
+    updateCuttingPreview();
+}
+
+function updateCuttingPreview() {
+    if (!cuttingCanvas) return;
+    
+    cuttingState.zoom = parseFloat(document.getElementById('imageZoom').value);
+    cuttingState.offsetX = parseInt(document.getElementById('imageX').value);
+    cuttingState.offsetY = parseInt(document.getElementById('imageY').value);
+    
+    const ctx = cuttingCanvas.getContext('2d');
+    ctx.clearRect(0, 0, cuttingCanvas.width, cuttingCanvas.height);
+    
+    // Zeichne Hintergrund
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(0, 0, cuttingCanvas.width, cuttingCanvas.height);
+    
+    // Zeichne Form
+    drawShape(ctx, 200, 200, 120, selectedShape, '#ddd', '#ccc');
+    
+    // Zeichne Bild
+    const img = new Image();
+    img.src = currentImageData;
+    img.onload = () => {
+        const w = img.width * cuttingState.zoom;
+        const h = img.height * cuttingState.zoom;
+        const x = 200 - w/2 + cuttingState.offsetX;
+        const y = 200 - h/2 + cuttingState.offsetY;
+        
+        ctx.save();
+        ctx.beginPath();
+        drawShape(ctx, 200, 200, 120, selectedShape, null, null);
+        ctx.clip();
+        ctx.drawImage(img, x, y, w, h);
+        ctx.restore();
+    };
+}
+
+function drawShape(ctx, x, y, size, shape, fillStyle, strokeStyle) {
+    if (fillStyle) ctx.fillStyle = fillStyle;
+    if (strokeStyle) {
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = 2;
+    }
+    
+    switch(shape) {
+        case 'square':
+            ctx.fillRect(x - size/2, y - size/2, size, size);
+            if (strokeStyle) ctx.strokeRect(x - size/2, y - size/2, size, size);
+            break;
+        case 'circle':
+            ctx.beginPath();
+            ctx.arc(x, y, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            if (strokeStyle) ctx.stroke();
+            break;
+        case 'hexagon':
+            drawHexagon(ctx, x, y, size/2, fillStyle, strokeStyle);
+            break;
+        case 'triangle':
+            drawTriangle(ctx, x, y, size, fillStyle, strokeStyle);
+            break;
+        case 'star':
+            drawStar(ctx, x, y, 5, size/2, size/4, fillStyle, strokeStyle);
+            break;
+    }
+}
+
+function drawHexagon(ctx, x, y, size, fillStyle, strokeStyle) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = (i * Math.PI / 3);
+        const px = x + size * Math.cos(angle);
+        const py = y + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    if (fillStyle) ctx.fill();
+    if (strokeStyle) ctx.stroke();
+}
+
+function drawTriangle(ctx, x, y, size, fillStyle, strokeStyle) {
+    ctx.beginPath();
+    ctx.moveTo(x, y - size/2);
+    ctx.lineTo(x + size/2, y + size/2);
+    ctx.lineTo(x - size/2, y + size/2);
+    ctx.closePath();
+    if (fillStyle) ctx.fill();
+    if (strokeStyle) ctx.stroke();
+}
+
+function drawStar(ctx, x, y, points, outerRadius, innerRadius, fillStyle, strokeStyle) {
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / points - Math.PI / 2;
+        const px = x + radius * Math.cos(angle);
+        const py = y + radius * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    if (fillStyle) ctx.fill();
+    if (strokeStyle) ctx.stroke();
+}
+
+function initCuttingGame() {
+    const ctx = cuttingGameCanvas.getContext('2d');
+    
+    // Zeichne Zielform groß
+    ctx.fillStyle = '#e8e8e8';
+    ctx.fillRect(0, 0, cuttingGameCanvas.width, cuttingGameCanvas.height);
+    
+    ctx.fillStyle = '#ccc';
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 3;
+    drawShape(ctx, 200, 200, 160, selectedShape, '#ddd', '#999');
+    
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Klick hier zum Schneiden!', 200, 50);
+    
+    // Click to cut
+    cuttingGameCanvas.addEventListener('click', performCut);
+}
+
+function performCut(e) {
+    const rect = cuttingGameCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Prüfe ob Click in Form ist
+    const distance = Math.sqrt(Math.pow(x - 200, 2) + Math.pow(y - 200, 2));
+    
+    // Vereinfachte Präzisions-Berechnung
+    let precision = 0;
+    
+    if (selectedShape === 'circle') {
+        precision = Math.max(0, 100 - distance * 0.5);
+    } else if (selectedShape === 'square') {
+        const dx = Math.abs(x - 200);
+        const dy = Math.abs(y - 200);
+        const maxDist = Math.max(dx, dy);
+        precision = Math.max(0, 100 - maxDist);
+    } else {
+        precision = Math.max(0, 100 - distance * 0.4);
+    }
+    
+    cuttingState.precision = Math.min(100, Math.max(0, precision + Math.random() * 20 - 10));
+    
+    // Bestimme Rarity basierend auf Präzision
+    if (cuttingState.precision >= 90) {
+        cuttingState.rarity = 'legendary';
+        cuttingState.value = Math.floor(800 + cuttingState.precision * 10);
+    } else if (cuttingState.precision >= 75) {
+        cuttingState.rarity = 'epic';
+        cuttingState.value = Math.floor(300 + cuttingState.precision * 5);
+    } else if (cuttingState.precision >= 50) {
+        cuttingState.rarity = 'rare';
+        cuttingState.value = Math.floor(100 + cuttingState.precision * 2);
+    } else {
+        cuttingState.rarity = 'common';
+        cuttingState.value = Math.floor(10 + cuttingState.precision);
+    }
+    
+    // Update Display
+    const precisionDisplay = document.getElementById('precisionDisplay');
+    precisionDisplay.innerHTML = `
+        <div>Präzision: ${Math.round(cuttingState.precision)}%</div>
+        <div style="font-size: 14px; color: #667eea;">Seltenheit: ${cuttingState.rarity}</div>
+        <div style="font-size: 16px; color: #27ae60;">Wert: ${cuttingState.value}€</div>
+    `;
+    
+    // Redraw game
+    initCuttingGame();
+}
+
+function finalizeMagnet() {
+    if (cuttingState.precision === 0) {
+        alert('Bitte schneide den Magneten zuerst!');
+        return;
+    }
+    
+    // Erstelle Magnet mit allen Daten
+    const img = new Image();
+    img.src = currentImageData;
+    img.onload = () => {
+        const w = img.width * cuttingState.zoom;
+        const h = img.height * cuttingState.zoom;
+        const x = 200 - w/2 + cuttingState.offsetX;
+        const y = 200 - h/2 + cuttingState.offsetY;
+        
+        // Erstelle Canvas mit der Form
+        const magnetCanvas = document.createElement('canvas');
+        magnetCanvas.width = 80;
+        magnetCanvas.height = 80;
+        const magnetCtx = magnetCanvas.getContext('2d');
+        
+        // Zeichne Form mit Bild
+        magnetCtx.save();
+        magnetCtx.beginPath();
+        drawShape(magnetCtx, 40, 40, 80, selectedShape, null, null);
+        magnetCtx.clip();
+        
+        // Skaliere Bild für 80x80
+        const scale = 80 / 160;
+        magnetCtx.drawImage(img, 
+            (x - 200) * scale + 40, 
+            (y - 200) * scale + 40, 
+            w * scale, 
+            h * scale);
+        magnetCtx.restore();
+        
+        const magnetImage = magnetCanvas.toDataURL();
+        
+        // Füge zu Inventory hinzu
+        const series = `${cuttingState.rarity.toUpperCase()}-${Date.now()}`;
+        if (!gameState.inventory[series]) {
+            gameState.inventory[series] = [];
+        }
+        
+        gameState.inventory[series].push({
+            id: Date.now(),
+            imageData: magnetImage,
+            precision: cuttingState.precision,
+            shape: selectedShape,
+            rarity: cuttingState.rarity
+        });
+        
+        gameState.money += cuttingState.value;
+        gameState.ownershipCount[series] = 1;
+        
+        // Magnet auf Kühlschrank
+        gameState.magnets.push(new Magnet(magnetImage, 100 + Math.random() * 200, 100, series));
+        
+        closeImageModal();
+        updateUI();
+        draw();
+        
+        alert(`Magnet erstellt! Wert: ${cuttingState.value}€ (${cuttingState.rarity})`);
+    };
+}
+
 document.getElementById('imageUpload').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {

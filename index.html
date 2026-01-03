@@ -70,6 +70,65 @@
         </div>
     </div>
 
+    <!-- Image Import Modal -->
+    <div id="imageModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeImageModal()">&times;</span>
+            <h2>Magnet erstellen</h2>
+            
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>1. Form auswählen</h3>
+                    <div class="shape-buttons">
+                        <button class="shape-btn" onclick="selectShape('square')" data-shape="square">
+                            📦 Quadrat
+                        </button>
+                        <button class="shape-btn" onclick="selectShape('circle')" data-shape="circle">
+                            ⭕ Kreis
+                        </button>
+                        <button class="shape-btn" onclick="selectShape('hexagon')" data-shape="hexagon">
+                            ⬡ Sechseck
+                        </button>
+                        <button class="shape-btn" onclick="selectShape('triangle')" data-shape="triangle">
+                            △ Dreieck
+                        </button>
+                        <button class="shape-btn" onclick="selectShape('star')" data-shape="star">
+                            ⭐ Stern
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>2. Bild positionieren</h3>
+                    <div class="cutting-area">
+                        <canvas id="cuttingCanvas" width="400" height="400"></canvas>
+                        <div class="cutting-controls">
+                            <label>Zoom: <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1" onchange="updateCuttingPreview()"></label>
+                            <label>X: <input type="range" id="imageX" min="-200" max="200" step="5" value="0" onchange="updateCuttingPreview()"></label>
+                            <label>Y: <input type="range" id="imageY" min="-200" max="200" step="5" value="0" onchange="updateCuttingPreview()"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>3. Bild schneiden (wie Cookie Cutter)</h3>
+                    <p style="font-size: 14px; color: #666;">Klicke auf die Form um sie zu schneiden. Du bekommst Punkte basierend auf Präzision!</p>
+                    <div class="cutting-game-area">
+                        <canvas id="cuttingGameCanvas" width="400" height="400"></canvas>
+                        <div id="precisionDisplay" style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 10px;">
+                            Präzision: 0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="closeImageModal()" class="btn-secondary">Abbrechen</button>
+                <button onclick="finalizeMagnet()" class="btn-primary">Magnet erstellen</button>
+            </div>
+        </div>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>
