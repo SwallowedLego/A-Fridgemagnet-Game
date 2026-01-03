@@ -37,8 +37,24 @@ const fridges = {
         empty: 'Fridges - Green/Fridge 5 - Empty.png'
     },
     white1: {
-        closed: 'Fridges - White/Fridge 1.png',
+        closed: 'Fridges - White/Fridge 1 .png',
         empty: 'Fridges - White/Fridge 1 - Empty.png'
+    },
+    white2: {
+        closed: 'Fridges - White/Fridge 2.png',
+        empty: 'Fridges - White/Fridge 2 - Empty.png'
+    },
+    white3: {
+        closed: 'Fridges - White/Fridge 3.png',
+        empty: 'Fridges - White/Fridge 3 - Empty.png'
+    },
+    white4: {
+        closed: 'Fridges - White/Fridge 4.png',
+        empty: 'Fridges - White/Fridge 4 - Empty.png'
+    },
+    white5: {
+        closed: 'Fridges - White/Fridge 5.png',
+        empty: 'Fridges - White/Fridge 5 - Empty.png'
     }
 };
 
@@ -88,24 +104,28 @@ class Magnet {
 function drawFridge() {
     const fridgeConfig = fridges[gameState.fridgeSkin];
     
-    // Einfache Grafik (Sprites könnten später geladen werden)
-    ctx.fillStyle = gameState.fridgeSkin.includes('white') ? '#e8e8e8' : '#a8c8d8';
-    ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
+    if (!fridgeConfig) {
+        console.error('Fridge skin not found:', gameState.fridgeSkin);
+        return;
+    }
     
-    // Griff
-    ctx.fillStyle = '#333';
-    ctx.fillRect(fridge.x + fridge.width - 15, fridge.y + fridge.height / 2 - 35, 8, 70);
+    // Lade und zeichne das Sprite-Bild
+    const img = new Image();
+    img.src = fridgeConfig.closed;
     
-    // Detaillinien
-    ctx.strokeStyle = '#999';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(fridge.x + 10, fridge.y + fridge.height / 2);
-    ctx.lineTo(fridge.x + fridge.width - 10, fridge.y + fridge.height / 2);
-    ctx.stroke();
+    img.onload = () => {
+        // Skaliere Bild auf die Kühlschrank-Größe
+        ctx.drawImage(img, fridge.x, fridge.y, fridge.width, fridge.height);
+    };
+    
+    img.onerror = () => {
+        // Fallback: Zeichne einfache Grafik
+        ctx.fillStyle = gameState.fridgeSkin.includes('white') ? '#e8e8e8' : '#a8c8d8';
+        ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
+    };
 }
 
 // ========== SPIEL ZEICHNEN ==========
@@ -258,15 +278,33 @@ function updateSkins() {
         const card = document.createElement('div');
         card.className = 'skin-card';
         const isActive = gameState.fridgeSkin === skinId;
-        card.innerHTML = `
-            <div style="background: ${skinId.includes('white') ? '#fff' : '#96a6c8'}; padding: 20px; border-radius: 8px;">
-                <div style="font-size: 40px; margin: 10px 0;">🧊</div>
-            </div>
-            <div class="magnet-series">${skinId}</div>
-            <button class="card-button" onclick="selectFridgeSkin('${skinId}')">
-                ${isActive ? '✓ Aktiv' : 'Auswählen'}
-            </button>
-        `;
+        
+        // Lade Preview-Bild
+        const img = new Image();
+        img.src = skinConfig.closed;
+        
+        const imgElement = document.createElement('img');
+        imgElement.src = skinConfig.closed;
+        imgElement.style.width = '100%';
+        imgElement.style.height = '100px';
+        imgElement.style.objectFit = 'cover';
+        imgElement.style.borderRadius = '2px';
+        imgElement.style.marginBottom = '8px';
+        imgElement.style.border = '1px solid #999';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'magnet-series';
+        nameDiv.textContent = skinId.replace('green', '🟢 Green ').replace('white', '⚪ White ');
+        
+        const buttonDiv = document.createElement('button');
+        buttonDiv.className = 'card-button';
+        buttonDiv.onclick = () => selectFridgeSkin(skinId);
+        buttonDiv.textContent = isActive ? '✓ Aktiv' : 'Auswählen';
+        
+        card.appendChild(imgElement);
+        card.appendChild(nameDiv);
+        card.appendChild(buttonDiv);
+        
         grid.appendChild(card);
     });
 }
