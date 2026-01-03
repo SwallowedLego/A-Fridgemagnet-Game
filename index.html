@@ -27,9 +27,7 @@
                 <h1>Kühlschrank Magnet Spiel</h1>
                 <canvas id="gameCanvas" width="1000" height="600"></canvas>
                 <div class="controls">
-                    <button id="toggleDoor">🚪 Tür öffnen/schließen</button>
-                    <button id="addMagnet">➕ Magnet hinzufügen</button>
-                    <button id="uploadImage" style="display: none;">Bild hochladen</button>
+                    <button id="toggleDoor">🧲 Magnet hinzufügen</button>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                 </div>
             </div>
@@ -73,8 +71,10 @@
     <!-- Image Import Modal -->
     <div id="imageModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeImageModal()">&times;</span>
-            <h2>Magnet erstellen</h2>
+            <div class="modal-header">
+                <h2>Magnet erstellen</h2>
+                <button class="modal-close" onclick="closeImageModal()">×</button>
+            </div>
             
             <div class="modal-body">
                 <div class="modal-section">
@@ -111,12 +111,12 @@
                 </div>
 
                 <div class="modal-section">
-                    <h3>3. Bild schneiden (wie Cookie Cutter)</h3>
-                    <p style="font-size: 14px; color: #666;">Klicke auf die Form um sie zu schneiden. Du bekommst Punkte basierend auf Präzision!</p>
+                    <h3>3. Tracen wie Perfect Circle</h3>
+                    <p style="font-size: 11px; color: #666;">Zeichne die Form nach (wie bei Perfect Circle). Je genauer desto besser der Wert!</p>
                     <div class="cutting-game-area">
                         <canvas id="cuttingGameCanvas" width="400" height="400"></canvas>
-                        <div id="precisionDisplay" style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 10px;">
-                            Präzision: 0%
+                        <div id="precisionDisplay">
+                            <div>Präzision: <span style="color: #0078d7; font-size: 16px;">0%</span></div>
                         </div>
                     </div>
                 </div>

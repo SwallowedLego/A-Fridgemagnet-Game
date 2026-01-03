@@ -84,39 +84,28 @@ class Magnet {
     }
 }
 
-// ========== KÜHLSCHRANK ZEICHNEN ==========
+// ========== KÜHLSCHRANK ZEICHNEN MIT SPRITES ==========
 function drawFridge() {
     const fridgeConfig = fridges[gameState.fridgeSkin];
     
-    if (fridgeOpen) {
-        // Tür offen - einfache Grafik
-        ctx.fillStyle = '#6474a0';
-        ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
-        
-        // Regale
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(fridge.x + 20, fridge.y + 20, fridge.width - 40, fridge.height - 40);
-        
-        ctx.fillStyle = '#ccc';
-        for (let i = 1; i < 4; i++) {
-            const y = fridge.y + (fridge.height / 4) * i;
-            ctx.fillRect(fridge.x + 20, y, fridge.width - 40, 3);
-        }
-    } else {
-        // Tür zu
-        ctx.fillStyle = '#96a6c8';
-        ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
-        
-        // Türgriff
-        ctx.fillStyle = '#333';
-        ctx.fillRect(fridge.x + fridge.width - 20, fridge.y + fridge.height / 2 - 40, 10, 80);
-    }
+    // Einfache Grafik (Sprites könnten später geladen werden)
+    ctx.fillStyle = gameState.fridgeSkin.includes('white') ? '#e8e8e8' : '#a8c8d8';
+    ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
+    
+    // Griff
+    ctx.fillStyle = '#333';
+    ctx.fillRect(fridge.x + fridge.width - 15, fridge.y + fridge.height / 2 - 35, 8, 70);
+    
+    // Detaillinien
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(fridge.x + 10, fridge.y + fridge.height / 2);
+    ctx.lineTo(fridge.x + fridge.width - 10, fridge.y + fridge.height / 2);
+    ctx.stroke();
 }
 
 // ========== SPIEL ZEICHNEN ==========
@@ -236,18 +225,21 @@ function updateInventory() {
     document.getElementById('totalSeries').textContent = totalSeries;
     
     if (totalMagnets === 0) {
-        grid.innerHTML = '<div class="empty-message">Dein Lager ist leer. Kaufe Magnete auf dem Markt!</div>';
+        grid.innerHTML = '<div class="empty-message">Dein Lager ist leer. Erstelle Magnete durch Bildimport!</div>';
         return;
     }
     
     Object.entries(gameState.inventory).forEach(([series, magnets]) => {
         magnets.forEach(magnet => {
-            const value = getMagnetValue(series);
+            const value = magnet.value || getMagnetValue(series);
             const card = document.createElement('div');
             card.className = 'magnet-card';
+            const rarityClass = `rarity-${magnet.rarity || 'common'}`;
             card.innerHTML = `
                 <img src="${magnet.imageData}" alt="${series}">
                 <div class="magnet-series">${series}</div>
+                <div class="magnet-rarity ${rarityClass}">${(magnet.rarity || 'common').toUpperCase()}</div>
+                <div style="font-size: 10px; color: #666;">Präzision: ${Math.round(magnet.precision || 0)}%</div>
                 <div class="magnet-value">${value}€</div>
                 <button class="card-button" onclick="sellMagnet('${magnet.id}', ${value}, '${series}')">
                     Verkaufen
@@ -343,7 +335,7 @@ canvas.addEventListener('mousedown', (e) => {
     const mouseY = e.clientY - rect.top;
     
     for (let i = gameState.magnets.length - 1; i >= 0; i--) {
-        if (gameState.magnets[i].contains(mouseX, mouseY) && !fridgeOpen) {
+        if (gameState.magnets[i].contains(mouseX, mouseY)) {
             draggedMagnet = gameState.magnets[i];
             draggedMagnet.dragging = true;
             break;
@@ -373,11 +365,6 @@ canvas.addEventListener('mouseup', () => {
 
 // ========== BUTTONS ==========
 document.getElementById('toggleDoor').addEventListener('click', () => {
-    fridgeOpen = !fridgeOpen;
-    draw();
-});
-
-document.getElementById('addMagnet').addEventListener('click', () => {
     document.getElementById('imageUpload').click();
 });
 
@@ -546,73 +533,208 @@ function drawStar(ctx, x, y, points, outerRadius, innerRadius, fillStyle, stroke
 function initCuttingGame() {
     const ctx = cuttingGameCanvas.getContext('2d');
     
-    // Zeichne Zielform groß
-    ctx.fillStyle = '#e8e8e8';
+    // Zeichne weiße Canvas
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, cuttingGameCanvas.width, cuttingGameCanvas.height);
     
-    ctx.fillStyle = '#ccc';
+    // Zeichne graue Zielform
+    ctx.fillStyle = '#e0e0e0';
     ctx.strokeStyle = '#999';
-    ctx.lineWidth = 3;
-    drawShape(ctx, 200, 200, 160, selectedShape, '#ddd', '#999');
+    ctx.lineWidth = 4;
+    drawShape(ctx, 200, 200, 140, selectedShape, '#e0e0e0', '#999');
     
+    // Label
     ctx.fillStyle = '#333';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Klick hier zum Schneiden!', 200, 50);
+    ctx.fillText('Tracen wie Perfect Circle', 200, 30);
     
-    // Click to cut
-    cuttingGameCanvas.addEventListener('click', performCut);
+    // Starte Drawing
+    let isDrawing = false;
+    let drawnPoints = [];
+    
+    cuttingGameCanvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        drawnPoints = [];
+    });
+    
+    cuttingGameCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        
+        const rect = cuttingGameCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        drawnPoints.push({x, y});
+        
+        // Zeichne User Line
+        ctx.strokeStyle = '#0078d7';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        if (drawnPoints.length === 1) {
+            ctx.beginPath();
+            ctx.moveTo(drawnPoints[0].x, drawnPoints[0].y);
+        } else {
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+    });
+    
+    cuttingGameCanvas.addEventListener('mouseup', (e) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        if (drawnPoints.length < 10) {
+            alert('Bitte zeichne die Form aus!');
+            initCuttingGame();
+            return;
+        }
+        
+        // Berechne Präzision
+        const precision = calculateDrawingPrecision(drawnPoints, selectedShape);
+        cuttingState.precision = precision;
+        
+        // Bestimme Rarity
+        if (precision >= 90) {
+            cuttingState.rarity = 'legendary';
+            cuttingState.value = Math.floor(800 + precision * 10);
+        } else if (precision >= 75) {
+            cuttingState.rarity = 'epic';
+            cuttingState.value = Math.floor(300 + precision * 5);
+        } else if (precision >= 50) {
+            cuttingState.rarity = 'rare';
+            cuttingState.value = Math.floor(100 + precision * 2);
+        } else {
+            cuttingState.rarity = 'common';
+            cuttingState.value = Math.floor(10 + precision);
+        }
+        
+        // Update Display
+        const precisionDisplay = document.getElementById('precisionDisplay');
+        const rarityColor = {
+            'common': '#888',
+            'rare': '#4a90e2',
+            'epic': '#9b59b6',
+            'legendary': '#f39c12'
+        };
+        
+        precisionDisplay.innerHTML = `
+            <div>Präzision: <span style="color: ${rarityColor[cuttingState.rarity]}; font-size: 16px;">${Math.round(precision)}%</span></div>
+            <div style="font-size: 11px; color: ${rarityColor[cuttingState.rarity]};">Seltenheit: ${cuttingState.rarity.toUpperCase()}</div>
+            <div style="font-size: 12px; color: #27ae60;">Wert: ${cuttingState.value}€</div>
+        `;
+        
+        // Zeige Ergebnis auf Canvas
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = '#0078d7';
+        drawShape(ctx, 200, 200, 140, selectedShape, '#0078d7', '#0078d7');
+        ctx.globalAlpha = 1;
+    });
 }
 
-function performCut(e) {
-    const rect = cuttingGameCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+function calculateDrawingPrecision(drawnPoints, shape) {
+    // Generiere ideale Punkte für die Form
+    const idealPoints = generateShapePoints(shape, 200, 200, 140);
     
-    // Prüfe ob Click in Form ist
-    const distance = Math.sqrt(Math.pow(x - 200, 2) + Math.pow(y - 200, 2));
+    if (drawnPoints.length === 0 || idealPoints.length === 0) return 0;
     
-    // Vereinfachte Präzisions-Berechnung
-    let precision = 0;
+    // Vereinfachter Vergleich: Durchschnittlicher Abstand
+    let totalDistance = 0;
     
-    if (selectedShape === 'circle') {
-        precision = Math.max(0, 100 - distance * 0.5);
-    } else if (selectedShape === 'square') {
-        const dx = Math.abs(x - 200);
-        const dy = Math.abs(y - 200);
-        const maxDist = Math.max(dx, dy);
-        precision = Math.max(0, 100 - maxDist);
-    } else {
-        precision = Math.max(0, 100 - distance * 0.4);
+    for (let drawnPoint of drawnPoints) {
+        let minDist = Infinity;
+        for (let idealPoint of idealPoints) {
+            const dist = Math.sqrt(
+                Math.pow(drawnPoint.x - idealPoint.x, 2) +
+                Math.pow(drawnPoint.y - idealPoint.y, 2)
+            );
+            minDist = Math.min(minDist, dist);
+        }
+        totalDistance += minDist;
     }
     
-    cuttingState.precision = Math.min(100, Math.max(0, precision + Math.random() * 20 - 10));
+    const avgDistance = totalDistance / drawnPoints.length;
     
-    // Bestimme Rarity basierend auf Präzision
-    if (cuttingState.precision >= 90) {
-        cuttingState.rarity = 'legendary';
-        cuttingState.value = Math.floor(800 + cuttingState.precision * 10);
-    } else if (cuttingState.precision >= 75) {
-        cuttingState.rarity = 'epic';
-        cuttingState.value = Math.floor(300 + cuttingState.precision * 5);
-    } else if (cuttingState.precision >= 50) {
-        cuttingState.rarity = 'rare';
-        cuttingState.value = Math.floor(100 + cuttingState.precision * 2);
-    } else {
-        cuttingState.rarity = 'common';
-        cuttingState.value = Math.floor(10 + cuttingState.precision);
+    // Konvertiere in Präzision (0-100%)
+    // 0px Abstand = 100%, 100px Abstand = 0%
+    let precision = Math.max(0, 100 - avgDistance);
+    
+    // Bonus für geschlossene Form
+    if (drawnPoints.length > 5) {
+        const firstPoint = drawnPoints[0];
+        const lastPoint = drawnPoints[drawnPoints.length - 1];
+        const closureDistance = Math.sqrt(
+            Math.pow(firstPoint.x - lastPoint.x, 2) +
+            Math.pow(firstPoint.y - lastPoint.y, 2)
+        );
+        
+        if (closureDistance < 50) {
+            precision += 10;
+        }
     }
     
-    // Update Display
-    const precisionDisplay = document.getElementById('precisionDisplay');
-    precisionDisplay.innerHTML = `
-        <div>Präzision: ${Math.round(cuttingState.precision)}%</div>
-        <div style="font-size: 14px; color: #667eea;">Seltenheit: ${cuttingState.rarity}</div>
-        <div style="font-size: 16px; color: #27ae60;">Wert: ${cuttingState.value}€</div>
-    `;
+    return Math.min(100, Math.max(0, precision));
+}
+
+function generateShapePoints(shape, x, y, size) {
+    let points = [];
     
-    // Redraw game
-    initCuttingGame();
+    switch(shape) {
+        case 'circle':
+            for (let i = 0; i < 360; i += 5) {
+                const angle = (i * Math.PI) / 180;
+                points.push({
+                    x: x + (size / 2) * Math.cos(angle),
+                    y: y + (size / 2) * Math.sin(angle)
+                });
+            }
+            break;
+            
+        case 'square':
+            const half = size / 2;
+            for (let i = -half; i < half; i += 5) {
+                points.push({x: x + i, y: y - half});
+                points.push({x: x + half, y: y + i});
+                points.push({x: x - i, y: y + half});
+                points.push({x: x - half, y: y - i});
+            }
+            break;
+            
+        case 'hexagon':
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * Math.PI / 3);
+                points.push({
+                    x: x + (size / 2) * Math.cos(angle),
+                    y: y + (size / 2) * Math.sin(angle)
+                });
+            }
+            break;
+            
+        case 'triangle':
+            for (let i = 0; i < 3; i++) {
+                const angle = (i * 2 * Math.PI / 3) - Math.PI / 2;
+                points.push({
+                    x: x + (size / 2) * Math.cos(angle),
+                    y: y + (size / 2) * Math.sin(angle)
+                });
+            }
+            break;
+            
+        case 'star':
+            for (let i = 0; i < 10; i++) {
+                const radius = (i % 2 === 0) ? (size / 2) : (size / 4);
+                const angle = (i * Math.PI) / 5 - Math.PI / 2;
+                points.push({
+                    x: x + radius * Math.cos(angle),
+                    y: y + radius * Math.sin(angle)
+                });
+            }
+            break;
+    }
+    
+    return points;
 }
 
 function finalizeMagnet() {
@@ -664,7 +786,8 @@ function finalizeMagnet() {
             imageData: magnetImage,
             precision: cuttingState.precision,
             shape: selectedShape,
-            rarity: cuttingState.rarity
+            rarity: cuttingState.rarity,
+            value: cuttingState.value
         });
         
         gameState.money += cuttingState.value;
@@ -677,7 +800,7 @@ function finalizeMagnet() {
         updateUI();
         draw();
         
-        alert(`Magnet erstellt! Wert: ${cuttingState.value}€ (${cuttingState.rarity})`);
+        alert(`Magnet erstellt!\nPräzision: ${Math.round(cuttingState.precision)}%\nWert: ${cuttingState.value}€ (${cuttingState.rarity})`);
     };
 }
 

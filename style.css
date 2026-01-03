@@ -5,57 +5,69 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0078d7;
+    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
     min-height: 100vh;
-    padding: 20px;
+    padding: 10px;
+    color: #333;
 }
 
 .main-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
-/* Navbar */
+/* Windows Vista/7 Style */
 .navbar {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 10px;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e5e5e5 100%);
+    padding: 8px;
+    border-radius: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    border: 1px solid #d0d0d0;
+    box-shadow: inset 1px 1px 0 #fff;
 }
 
 .nav-items {
     display: flex;
-    gap: 10px;
+    gap: 4px;
 }
 
 .nav-btn {
-    padding: 10px 20px;
-    border: none;
-    background: #f0f0f0;
-    border-radius: 8px;
+    padding: 6px 16px;
+    border: 1px solid #999;
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    border-radius: 3px;
     cursor: pointer;
-    transition: all 0.3s;
-    font-size: 14px;
+    transition: all 0.2s;
+    font-size: 11px;
+    font-weight: bold;
+    color: #000;
+    box-shadow: inset 1px 1px 0 #fff;
 }
 
 .nav-btn:hover {
-    background: #e0e0e0;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+    border-color: #0078d7;
 }
 
 .nav-btn.active {
-    background: #667eea;
+    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
     color: white;
+    border-color: #0063b1;
 }
 
 .wallet {
     font-weight: bold;
     color: #333;
-    font-size: 16px;
+    font-size: 12px;
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    padding: 6px 16px;
+    border: 1px solid #999;
+    border-radius: 3px;
 }
 
 /* Tabs */
@@ -74,26 +86,30 @@ body {
 }
 
 .container {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #d0d0d0;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #999;
 }
 
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 #gameCanvas {
-    border: 3px solid #333;
-    border-radius: 10px;
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    border-radius: 2px;
     display: block;
     background: white;
     cursor: grab;
     max-width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 #gameCanvas:active {
@@ -102,125 +118,342 @@ h1 {
 
 .controls {
     display: flex;
-    gap: 10px;
+    gap: 4px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 button {
-    padding: 12px 24px;
-    font-size: 16px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 11px;
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    color: #000;
+    border: 1px solid #999;
+    border-radius: 3px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.2s;
+    box-shadow: inset 1px 1px 0 #fff;
+    font-weight: bold;
 }
 
 button:hover {
-    background: #5568d3;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+    border-color: #0078d7;
 }
 
 button:active {
-    transform: scale(0.98);
+    box-shadow: inset 1px 1px 2px #808080;
 }
 
 /* Grid Layouts */
 .market-grid, .inventory-grid, .skins-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .magnet-card, .skin-card {
-    background: #f9f9f9;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    padding: 15px;
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    border: 1px solid #d0d0d0;
+    border-radius: 3px;
+    padding: 10px;
     text-align: center;
-    transition: all 0.3s;
+    transition: all 0.2s;
     cursor: pointer;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #999;
 }
 
 .magnet-card:hover, .skin-card:hover {
-    border-color: #667eea;
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    border-color: #0078d7;
+    background: linear-gradient(180deg, #f9f9f9 0%, #f0f0f0 100%);
 }
 
 .magnet-card img, .skin-card img {
     width: 100%;
-    height: 150px;
+    height: 100px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    border: 1px solid #999;
 }
 
 .magnet-info {
-    font-size: 14px;
-    margin: 10px 0;
-    color: #555;
+    font-size: 11px;
+    margin: 5px 0;
+    color: #333;
 }
 
 .magnet-series {
     font-weight: bold;
-    color: #667eea;
+    color: #0078d7;
+    font-size: 12px;
 }
 
 .magnet-value {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: bold;
     color: #27ae60;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 .magnet-ownership {
-    font-size: 12px;
-    color: #999;
+    font-size: 10px;
+    color: #666;
+    margin: 3px 0;
+}
+
+.magnet-rarity {
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 2px;
     margin: 5px 0;
+    font-weight: bold;
+}
+
+.rarity-common {
+    background: #ddd;
+    color: #333;
+}
+
+.rarity-rare {
+    background: #4a90e2;
+    color: white;
+}
+
+.rarity-epic {
+    background: #9b59b6;
+    color: white;
+}
+
+.rarity-legendary {
+    background: #f39c12;
+    color: white;
 }
 
 .card-button {
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+    padding: 4px;
+    margin-top: 8px;
 }
 
 .inventory-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .stat {
-    background: #f0f0f0;
-    padding: 20px;
-    border-radius: 10px;
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    padding: 15px;
+    border-radius: 3px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 16px;
+    font-size: 12px;
+    border: 1px solid #d0d0d0;
 }
 
 .stat span:last-child {
     font-weight: bold;
-    color: #667eea;
-    font-size: 24px;
+    color: #0078d7;
+    font-size: 18px;
 }
 
 .empty-message {
     text-align: center;
-    color: #999;
-    padding: 40px 20px;
-    font-size: 16px;
+    color: #666;
+    padding: 30px 20px;
+    font-size: 12px;
+}
+
+/* Modal Styles - Vista Style */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    padding: 2px;
+    border-radius: 4px;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 0 1px #999, inset 1px 1px 0 #fff;
+}
+
+.modal-header {
+    background: linear-gradient(90deg, #0078d7 0%, #0063b1 100%);
+    color: white;
+    padding: 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #999;
+}
+
+.modal-header h2 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.modal-close {
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    border: 1px solid #999;
+    width: 16px;
+    height: 14px;
+    padding: 0;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-body {
+    padding: 10px;
+}
+
+.modal-section {
+    margin-bottom: 15px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    border: 1px solid #d0d0d0;
+    padding: 8px;
+    border-radius: 2px;
+}
+
+.modal-section h3 {
+    color: #0078d7;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.shape-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 6px;
+}
+
+.shape-btn {
+    padding: 8px;
+    border: 1px solid #999;
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    box-shadow: inset 1px 1px 0 #fff;
+}
+
+.shape-btn:hover {
+    border-color: #0078d7;
+}
+
+.shape-btn.active {
+    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    color: white;
+    border-color: #0063b1;
+}
+
+.cutting-area, .cutting-game-area {
+    background: white;
+    border: 1px solid #999;
+    border-radius: 2px;
+    padding: 10px;
+}
+
+#cuttingCanvas, #cuttingGameCanvas {
+    border: 1px solid #999;
+    border-radius: 2px;
+    display: block;
+    margin: 0 auto 10px;
+    cursor: crosshair;
+    background: white;
+}
+
+.cutting-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 6px;
+}
+
+.cutting-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+
+.cutting-controls input[type="range"] {
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 15px;
+    padding: 10px;
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    border-top: 1px solid #d0d0d0;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 6px 16px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+    box-shadow: inset 1px 1px 0 #fff;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, #0084e8 0%, #0070c0 100%);
+}
+
+.btn-secondary {
+    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
+    color: #000;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+}
+
+#precisionDisplay {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 10px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    margin-top: 10px;
 }
 
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 15px;
+        gap: 8px;
     }
 
     .nav-items {
@@ -229,157 +462,11 @@ button:active {
     }
 
     .market-grid, .inventory-grid, .skins-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 
     #gameCanvas {
         max-width: 100%;
         height: auto;
     }
-}
-
-/* Modal Styles */
-.modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 30px;
-    border-radius: 15px;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.modal-close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.modal-close:hover {
-    color: #000;
-}
-
-.modal-body {
-    margin: 20px 0;
-}
-
-.modal-section {
-    margin-bottom: 30px;
-}
-
-.modal-section h3 {
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.shape-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-}
-
-.shape-btn {
-    padding: 15px;
-    border: 3px solid #ddd;
-    background: #f9f9f9;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 24px;
-    transition: all 0.3s;
-}
-
-.shape-btn:hover {
-    border-color: #667eea;
-}
-
-.shape-btn.active {
-    background: #667eea;
-    color: white;
-    border-color: #667eea;
-}
-
-.cutting-area {
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 20px;
-}
-
-#cuttingCanvas, #cuttingGameCanvas {
-    border: 2px solid #333;
-    border-radius: 8px;
-    background: white;
-    display: block;
-    margin: 0 auto 15px;
-}
-
-.cutting-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-}
-
-.cutting-controls label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.cutting-controls input[type="range"] {
-    flex: 1;
-}
-
-.cutting-game-area {
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 20px;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-}
-
-.btn-primary, .btn-secondary {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s;
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5568d3;
-}
-
-.btn-secondary {
-    background: #ddd;
-    color: #333;
-}
-
-.btn-secondary:hover {
-    background: #ccc;
 }
