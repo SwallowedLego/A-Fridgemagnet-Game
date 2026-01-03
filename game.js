@@ -1,6 +1,12 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Pixel-Art Rendering aktivieren
+ctx.imageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.msImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+
 // ========== SPIEL-STATE ==========
 let gameState = {
     money: 1000,
@@ -17,44 +23,44 @@ let draggedMagnet = null;
 // Kühlschrank Eigenschaften
 const fridges = {
     green1: {
-        closed: 'Fridges - Green/Fridge 1.png',
-        empty: 'Fridges - Green/Fridge 1 - Empty.png'
+        closed: 'Fridges - Green/Fridge 1_sprites/Fridge 1_000.png',
+        empty: 'Fridges - Green/Fridge 1_sprites/Fridge 1_000.png'
     },
     green2: {
-        closed: 'Fridges - Green/Fridge 2 .png',
-        empty: 'Fridges - Green/Fridge 2 - Empty.png'
+        closed: 'Fridges - Green/Fridge 2 _sprites/Fridge 2 _000.png',
+        empty: 'Fridges - Green/Fridge 2 _sprites/Fridge 2 _000.png'
     },
     green3: {
-        closed: 'Fridges - Green/Fridge 3.png',
-        empty: 'Fridges - Green/Fridge 3 - Empty.png'
+        closed: 'Fridges - Green/Fridge 3_sprites/Fridge 3_000.png',
+        empty: 'Fridges - Green/Fridge 3_sprites/Fridge 3_000.png'
     },
     green4: {
-        closed: 'Fridges - Green/Fridge 4 .png',
-        empty: 'Fridges - Green/Fridge 4 - Empty.png'
+        closed: 'Fridges - Green/Fridge 4 _sprites/Fridge 4 _000.png',
+        empty: 'Fridges - Green/Fridge 4 _sprites/Fridge 4 _000.png'
     },
     green5: {
-        closed: 'Fridges - Green/Fridge 5.png',
-        empty: 'Fridges - Green/Fridge 5 - Empty.png'
+        closed: 'Fridges - Green/Fridge 5_sprites/Fridge 5_000.png',
+        empty: 'Fridges - Green/Fridge 5_sprites/Fridge 5_000.png'
     },
     white1: {
-        closed: 'Fridges - White/Fridge 1 .png',
-        empty: 'Fridges - White/Fridge 1 - Empty.png'
+        closed: 'Fridges - White/Fridge 1 _sprites/Fridge 1 _000.png',
+        empty: 'Fridges - White/Fridge 1 _sprites/Fridge 1 _000.png'
     },
     white2: {
-        closed: 'Fridges - White/Fridge 2.png',
-        empty: 'Fridges - White/Fridge 2 - Empty.png'
+        closed: 'Fridges - White/Fridge 2_sprites/Fridge 2_000.png',
+        empty: 'Fridges - White/Fridge 2_sprites/Fridge 2_000.png'
     },
     white3: {
-        closed: 'Fridges - White/Fridge 3.png',
-        empty: 'Fridges - White/Fridge 3 - Empty.png'
+        closed: 'Fridges - White/Fridge 3_sprites/Fridge 3_000.png',
+        empty: 'Fridges - White/Fridge 3_sprites/Fridge 3_000.png'
     },
     white4: {
-        closed: 'Fridges - White/Fridge 4.png',
-        empty: 'Fridges - White/Fridge 4 - Empty.png'
+        closed: 'Fridges - White/Fridge 4_sprites/Fridge 4_000.png',
+        empty: 'Fridges - White/Fridge 4_sprites/Fridge 4_000.png'
     },
     white5: {
-        closed: 'Fridges - White/Fridge 5.png',
-        empty: 'Fridges - White/Fridge 5 - Empty.png'
+        closed: 'Fridges - White/Fridge 5_sprites/Fridge 5_000.png',
+        empty: 'Fridges - White/Fridge 5_sprites/Fridge 5_000.png'
     }
 };
 
@@ -109,13 +115,22 @@ function drawFridge() {
         return;
     }
     
-    // Lade und zeichne das Sprite-Bild
+    // Lade und zeichne das Sprite-Bild im Pixel-Art Stil
     const img = new Image();
     img.src = fridgeConfig.closed;
     
     img.onload = () => {
+        // Pixel-Art Rendering: Keine Glättung
+        ctx.imageSmoothingEnabled = false;
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.msImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
+        
         // Skaliere Bild auf die Kühlschrank-Größe
         ctx.drawImage(img, fridge.x, fridge.y, fridge.width, fridge.height);
+        
+        // Pixel-Art Effekt: Re-enable smoothing für andere Elemente
+        ctx.imageSmoothingEnabled = true;
     };
     
     img.onerror = () => {
@@ -212,9 +227,11 @@ function updateSkins() {
         imgElement.style.width = '100%';
         imgElement.style.height = '100px';
         imgElement.style.objectFit = 'cover';
-        imgElement.style.borderRadius = '2px';
+        imgElement.style.borderRadius = '0';
         imgElement.style.marginBottom = '8px';
         imgElement.style.border = '1px solid #999';
+        imgElement.style.imageRendering = 'pixelated';
+        imgElement.style.imageRendering = 'crisp-edges';
         
         const nameDiv = document.createElement('div');
         nameDiv.className = 'magnet-series';
