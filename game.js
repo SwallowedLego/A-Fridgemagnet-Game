@@ -396,12 +396,19 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 
 function openImageModal() {
     document.getElementById('imageModal').style.display = 'flex';
+    selectedShape = 'square';
+    document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('[data-shape="square"]').classList.add('active');
+    
     setTimeout(() => {
         cuttingCanvas = document.getElementById('cuttingCanvas');
         cuttingGameCanvas = document.getElementById('cuttingGameCanvas');
+        document.getElementById('imageZoom').value = 1;
+        document.getElementById('imageX').value = 0;
+        document.getElementById('imageY').value = 0;
         updateCuttingPreview();
         initCuttingGame();
-    }, 100);
+    }, 50);
 }
 
 function closeImageModal() {
@@ -809,31 +816,31 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-            const x = Math.random() * (canvas.width - 100) + 50;
-            const y = Math.random() * (canvas.height - 100) + 50;
-            gameState.magnets.push(new Magnet(event.target.result, x, y, 'Custom'));
-            draw();
+            currentImageData = event.target.result;
+            openImageModal();
         };
         reader.readAsDataURL(file);
     }
 });
 
 // ========== TAB NAVIGATION ==========
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const tabName = e.target.dataset.tab;
-        
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        
-        e.target.classList.add('active');
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-        
-        if (tabName === 'game') {
-            draw();
-        }
+setTimeout(() => {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = e.target.getAttribute('data-tab');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            e.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'game') {
+                draw();
+            }
+        });
     });
-});
+}, 100);
 
 // ========== INIT ==========
 generateMarketMagnets();
