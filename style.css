@@ -5,12 +5,11 @@
 }
 
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #0078d7;
-    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #0066cc 0%, #3399ff 50%, #0066cc 100%);
     min-height: 100vh;
-    padding: 15px;
-    color: #333;
+    padding: 20px;
+    color: #1f1f1f;
 }
 
 .main-container {
@@ -18,70 +17,68 @@ body {
     margin: 0 auto;
 }
 
-/* Windows Vista/7 Style */
+/* Windows 7 Taskbar Style */
 .navbar {
-    background: linear-gradient(180deg, #f0f0f0 0%, #e5e5e5 100%);
-    padding: 10px;
-    border-radius: 2px;
+    background: linear-gradient(180deg, #e9e9e9 0%, #d0d0d0 100%);
+    padding: 6px;
+    border-radius: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    border: 1px solid #999;
-    border-bottom-color: #fff;
-    box-shadow: 0 1px 0 0 #fff inset;
+    margin-bottom: 15px;
+    border: 1px solid #888;
+    border-bottom: 2px solid #666;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .nav-items {
     display: flex;
-    gap: 4px;
+    gap: 0;
+    padding: 0 4px;
 }
 
 .nav-btn {
-    padding: 8px 16px;
-    border: 1px solid #999;
-    border-right-color: #999;
-    border-bottom-color: #999;
-    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 100%);
-    border-radius: 2px;
+    padding: 6px 14px;
+    border: 1px solid #bfbfbf;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.1s;
     font-size: 12px;
-    font-weight: bold;
-    color: #000;
-    box-shadow: 0 1px 0 0 #fff inset;
+    font-weight: 500;
+    color: #1f1f1f;
     margin: 0 2px;
+    text-shadow: 0 1px 0 #fff;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 .nav-btn:hover {
-    background: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
     border-color: #0078d7;
 }
 
 .nav-btn:active {
-    background: linear-gradient(180deg, #e5e5e5 0%, #d0d0d0 100%);
-    box-shadow: 0 1px 2px 1px #999 inset;
+    background: linear-gradient(180deg, #d9d9d9 0%, #e3e3e3 50%, #f0f0f0 100%);
+    box-shadow: 0 1px 0 #888 inset, 0 -1px 0 #fff inset;
 }
 
 .nav-btn.active {
-    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    background: linear-gradient(180deg, #f4a345 0%, #ed8936 50%, #d97706 100%);
     color: white;
-    border-color: #0063b1;
-    border-right-color: #fff;
-    border-bottom-color: #fff;
+    border-color: #b5622f;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .wallet {
     font-weight: bold;
-    color: #333;
+    color: #1f1f1f;
     font-size: 12px;
-    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 100%);
-    padding: 8px 16px;
-    border: 1px solid #999;
-    border-right-color: #999;
-    border-bottom-color: #999;
-    border-radius: 2px;
-    box-shadow: 0 1px 0 0 #fff inset;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    padding: 6px 14px;
+    border: 1px solid #bfbfbf;
+    border-radius: 0;
+    box-shadow: 0 1px 0 #fff inset;
+    text-shadow: 0 1px 0 #fff;
 }
 
 /* Tabs */
@@ -99,33 +96,49 @@ body {
     to { opacity: 1; }
 }
 
+/* Windows 7 Window Style */
 .container {
-    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
-    padding: 12px;
-    border-radius: 2px;
-    border: 1px solid #999;
-    border-bottom-color: #fff;
-    border-right-color: #fff;
-    box-shadow: 0 1px 0 0 #fff inset;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
+    padding: 2px;
+    border-radius: 0;
+    border: 1px solid #888;
+    border-bottom: 2px solid #555;
+    border-right: 2px solid #555;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.container::before {
+    content: '';
+    display: block;
+    background: linear-gradient(180deg, #f9f9f9 0%, #f0f0f0 100%);
+    padding: 10px;
+    margin: -2px -2px 10px -2px;
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    color: #1f1f1f;
     margin-bottom: 15px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
+    text-shadow: 0 1px 0 #fff;
+    background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
+    padding: 10px;
+    border-bottom: 1px solid #d0d0d0;
+    margin: -12px -12px 15px -12px;
 }
 
 #gameCanvas {
-    border: 2px solid;
-    border-color: #dfdfdf #808080 #808080 #dfdfdf;
-    border-radius: 2px;
+    border: 1px solid #777;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
     display: block;
     background: white;
     cursor: grab;
     max-width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    box-shadow: inset 1px 1px 0 #fff;
 }
 
 #gameCanvas:active {
@@ -137,148 +150,169 @@ h1 {
     gap: 4px;
     justify-content: center;
     flex-wrap: wrap;
+    padding: 8px;
+    background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
+    border-top: 1px solid #d0d0d0;
+    margin: 0 -12px -12px -12px;
 }
 
 button {
-    padding: 6px 16px;
-    font-size: 11px;
-    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 100%);
-    color: #000;
-    border: 1px solid #999;
-    border-right-color: #999;
-    border-bottom-color: #999;
-    border-radius: 2px;
+    padding: 5px 15px;
+    font-size: 12px;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    color: #1f1f1f;
+    border: 1px solid #bfbfbf;
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.1s;
-    box-shadow: 0 1px 0 0 #fff inset;
-    font-weight: bold;
+    box-shadow: 0 1px 0 #fff inset;
+    font-weight: 500;
+    text-shadow: 0 1px 0 #fff;
     margin: 2px;
 }
 
 button:hover {
-    background: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
     border-color: #0078d7;
 }
 
 button:active {
-    background: linear-gradient(180deg, #e5e5e5 0%, #d0d0d0 100%);
-    box-shadow: 0 1px 2px 1px #999 inset;
+    background: linear-gradient(180deg, #d9d9d9 0%, #e3e3e3 50%, #f0f0f0 100%);
+    box-shadow: 0 1px 0 #666 inset, 0 -1px 0 #fff inset;
+}
+
+button:focus {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
 }
 
 /* Grid Layouts */
 .market-grid, .inventory-grid, .skins-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
     margin-top: 15px;
 }
 
 .magnet-card, .skin-card {
-    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
-    border: 1px solid #d0d0d0;
-    border-radius: 3px;
-    padding: 10px;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
+    border: 1px solid #999;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
+    padding: 6px;
     text-align: center;
     transition: all 0.2s;
     cursor: pointer;
-    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #999;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 .magnet-card:hover, .skin-card:hover {
     border-color: #0078d7;
-    background: linear-gradient(180deg, #f9f9f9 0%, #f0f0f0 100%);
+    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+}
+
+.magnet-card:active, .skin-card:active {
+    box-shadow: 0 1px 0 #333 inset;
+    border-color: #666;
 }
 
 .magnet-card img, .skin-card img {
     width: 100%;
-    height: 100px;
+    height: 80px;
     object-fit: cover;
-    border-radius: 2px;
-    margin-bottom: 8px;
+    border-radius: 0;
+    margin-bottom: 6px;
     border: 1px solid #999;
 }
 
 .magnet-info {
     font-size: 11px;
-    margin: 5px 0;
+    margin: 4px 0;
     color: #333;
 }
 
 .magnet-series {
     font-weight: bold;
-    color: #0078d7;
-    font-size: 12px;
+    color: #003399;
+    font-size: 11px;
 }
 
 .magnet-value {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
-    color: #27ae60;
-    margin: 5px 0;
+    color: #009900;
+    margin: 4px 0;
 }
 
 .magnet-ownership {
     font-size: 10px;
     color: #666;
-    margin: 3px 0;
+    margin: 2px 0;
 }
 
 .magnet-rarity {
-    font-size: 11px;
-    padding: 3px 6px;
-    border-radius: 2px;
-    margin: 5px 0;
+    font-size: 10px;
+    padding: 2px 4px;
+    border-radius: 0;
+    margin: 4px 0;
     font-weight: bold;
+    border: 1px solid #999;
 }
 
 .rarity-common {
-    background: #ddd;
+    background: #e0e0e0;
     color: #333;
 }
 
 .rarity-rare {
-    background: #4a90e2;
+    background: linear-gradient(180deg, #0066cc 0%, #0052a3 100%);
     color: white;
+    border-color: #003366;
 }
 
 .rarity-epic {
-    background: #9b59b6;
+    background: linear-gradient(180deg, #9933cc 0%, #7722aa 100%);
     color: white;
+    border-color: #552288;
 }
 
 .rarity-legendary {
-    background: #f39c12;
-    color: white;
+    background: linear-gradient(180deg, #ffcc00 0%, #ff9900 100%);
+    color: #333;
+    border-color: #cc6600;
 }
 
 .card-button {
-    width: 100%;
-    padding: 4px;
-    margin-top: 8px;
+    width: calc(100% - 4px);
+    padding: 3px;
+    margin-top: 6px;
+    font-size: 10px;
 }
 
 .inventory-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
 }
 
 .stat {
-    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
-    padding: 15px;
-    border-radius: 3px;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
+    padding: 10px;
+    border-radius: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
-    border: 1px solid #d0d0d0;
+    font-size: 11px;
+    border: 1px solid #999;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 .stat span:last-child {
     font-weight: bold;
-    color: #0078d7;
-    font-size: 18px;
+    color: #003399;
+    font-size: 16px;
 }
 
 .empty-message {
@@ -288,7 +322,7 @@ button:active {
     font-size: 12px;
 }
 
-/* Modal Styles - Vista Style */
+/* Modal Styles */
 .modal {
     position: fixed;
     z-index: 1000;
@@ -296,49 +330,65 @@ button:active {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .modal-content {
-    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
     padding: 2px;
-    border-radius: 4px;
+    border-radius: 0;
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 0 0 1px #999, inset 1px 1px 0 #fff;
+    border: 1px solid #888;
+    border-bottom: 2px solid #555;
+    border-right: 2px solid #555;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
-    background: linear-gradient(90deg, #0078d7 0%, #0063b1 100%);
+    background: linear-gradient(90deg, #003399 0%, #0052a3 100%);
     color: white;
-    padding: 4px 8px;
+    padding: 2px 2px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid #666;
 }
 
 .modal-header h2 {
     font-size: 12px;
     font-weight: bold;
-    margin: 0;
+    margin: 4px 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .modal-close {
-    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
-    border: 1px solid #999;
-    width: 16px;
-    height: 14px;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    border: 1px solid #bfbfbf;
+    width: 18px;
+    height: 16px;
     padding: 0;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: bold;
+    color: #1f1f1f;
+    text-shadow: 0 1px 0 #fff;
+    margin: 2px;
+}
+
+.modal-close:hover {
+    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
+}
+
+.modal-close:active {
+    box-shadow: 0 1px 0 #666 inset;
 }
 
 .modal-body {
@@ -346,74 +396,82 @@ button:active {
 }
 
 .modal-section {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-    border: 1px solid #d0d0d0;
+    border: 1px solid #bfbfbf;
     padding: 8px;
-    border-radius: 2px;
+    border-radius: 0;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 .modal-section h3 {
-    color: #0078d7;
-    margin-bottom: 10px;
+    color: #003399;
+    margin-bottom: 8px;
     font-size: 12px;
     font-weight: bold;
+    text-shadow: 0 1px 0 #fff;
 }
 
 .shape-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 4px;
 }
 
 .shape-btn {
-    padding: 8px;
-    border: 1px solid #999;
-    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
-    border-radius: 3px;
+    padding: 6px;
+    border: 1px solid #bfbfbf;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    border-radius: 0;
     cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-    box-shadow: inset 1px 1px 0 #fff;
+    font-size: 11px;
+    transition: all 0.1s;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 .shape-btn:hover {
     border-color: #0078d7;
+    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
 }
 
 .shape-btn.active {
-    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    background: linear-gradient(180deg, #f4a345 0%, #ed8936 50%, #d97706 100%);
     color: white;
-    border-color: #0063b1;
+    border-color: #b5622f;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .cutting-area, .cutting-game-area {
     background: white;
     border: 1px solid #999;
-    border-radius: 2px;
-    padding: 10px;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
+    padding: 8px;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 #cuttingCanvas, #cuttingGameCanvas {
     border: 1px solid #999;
-    border-radius: 2px;
+    border-radius: 0;
     display: block;
-    margin: 0 auto 10px;
+    margin: 0 auto 8px;
     cursor: crosshair;
     background: white;
+    box-shadow: inset 0 1px 0 #fff;
 }
 
 .cutting-controls {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 4px;
 }
 
 .cutting-controls label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
+    gap: 4px;
+    font-size: 10px;
 }
 
 .cutting-controls input[type="range"] {
@@ -422,58 +480,66 @@ button:active {
 
 .modal-footer {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     justify-content: flex-end;
-    margin-top: 15px;
-    padding: 10px;
-    background: linear-gradient(180deg, #f5f5f5 0%, #efefef 100%);
+    margin-top: 10px;
+    padding: 8px;
+    background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
     border-top: 1px solid #d0d0d0;
 }
 
 .btn-primary, .btn-secondary {
-    padding: 6px 16px;
-    border: 1px solid #999;
-    border-radius: 3px;
+    padding: 5px 15px;
+    border: 1px solid #bfbfbf;
+    border-radius: 0;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.2s;
-    box-shadow: inset 1px 1px 0 #fff;
-    font-weight: bold;
+    transition: all 0.1s;
+    box-shadow: 0 1px 0 #fff inset;
+    font-weight: 500;
+    text-shadow: 0 1px 0 #fff;
 }
 
 .btn-primary {
-    background: linear-gradient(180deg, #0078d7 0%, #0063b1 100%);
+    background: linear-gradient(180deg, #f4a345 0%, #ed8936 50%, #d97706 100%);
     color: white;
+    border-color: #b5622f;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(180deg, #0084e8 0%, #0070c0 100%);
+    background: linear-gradient(180deg, #f5b047 0%, #ee923f 50%, #de8209 100%);
+}
+
+.btn-primary:active {
+    box-shadow: 0 1px 0 #333 inset;
 }
 
 .btn-secondary {
-    background: linear-gradient(180deg, #efefef 0%, #dfdfdf 100%);
-    color: #000;
+    background: linear-gradient(180deg, #f0f0f0 0%, #e3e3e3 50%, #d9d9d9 100%);
+    color: #1f1f1f;
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+    background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
 }
 
 #precisionDisplay {
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
-    padding: 10px;
+    padding: 8px;
     background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-    border: 1px solid #d0d0d0;
-    border-radius: 2px;
-    margin-top: 10px;
+    border: 1px solid #bfbfbf;
+    border-radius: 0;
+    margin-top: 8px;
+    box-shadow: 0 1px 0 #fff inset;
 }
 
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
 
     .nav-items {
@@ -482,7 +548,7 @@ button:active {
     }
 
     .market-grid, .inventory-grid, .skins-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
 
     #gameCanvas {

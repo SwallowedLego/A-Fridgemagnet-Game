@@ -151,87 +151,11 @@ function getMagnetValue(series) {
     return Math.max(baseValue, 200 - ownerCount * 5);
 }
 
-function generateMarketMagnets() {
-    gameState.marketMagnets = [];
-    const series = ['Fruit', 'Animals', 'Space', 'Retro', 'Cartoon'];
-    
-    series.forEach(s => {
-        for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
-            gameState.marketMagnets.push({
-                id: Date.now() + Math.random(),
-                series: s,
-                value: getMagnetValue(s),
-                imageData: generateMagnetImage(s)
-            });
-        }
-    });
-}
-
-function generateMagnetImage(series) {
-    const magnetCanvas = document.createElement('canvas');
-    magnetCanvas.width = 80;
-    magnetCanvas.height = 80;
-    const magnetCtx = magnetCanvas.getContext('2d');
-    
-    // Farbschema basierend auf Serie
-    const colors = {
-        'Fruit': ['#ff6b6b', '#ffd93d', '#6bcf7f'],
-        'Animals': ['#8B4513', '#D2691E', '#FFA500'],
-        'Space': ['#1a1a2e', '#0f3460', '#e94560'],
-        'Retro': ['#ff006e', '#fb5607', '#ffbe0b'],
-        'Cartoon': ['#00f5ff', '#ff006e', '#3a86ff']
-    };
-    
-    const colorsToUse = colors[series] || colors['Fruit'];
-    
-    magnetCtx.fillStyle = colorsToUse[0];
-    magnetCtx.fillRect(0, 0, 80, 80);
-    
-    magnetCtx.fillStyle = colorsToUse[1];
-    magnetCtx.beginPath();
-    magnetCtx.arc(40, 40, 25, 0, Math.PI * 2);
-    magnetCtx.fill();
-    
-    magnetCtx.fillStyle = colorsToUse[2];
-    magnetCtx.font = 'bold 14px Arial';
-    magnetCtx.textAlign = 'center';
-    magnetCtx.fillText(series[0], 40, 48);
-    
-    return magnetCanvas.toDataURL();
-}
-
 // ========== UI UPDATES ==========
 function updateUI() {
     document.getElementById('money').textContent = gameState.money;
-    updateMarket();
     updateInventory();
     updateSkins();
-}
-
-function updateMarket() {
-    generateMarketMagnets();
-    const grid = document.getElementById('marketGrid');
-    grid.innerHTML = '';
-    
-    if (gameState.marketMagnets.length === 0) {
-        grid.innerHTML = '<div class="empty-message">Keine Magnete verfügbar</div>';
-        return;
-    }
-    
-    gameState.marketMagnets.forEach(magnet => {
-        const card = document.createElement('div');
-        card.className = 'magnet-card';
-        card.innerHTML = `
-            <img src="${magnet.imageData}" alt="${magnet.series}">
-            <div class="magnet-series">${magnet.series}</div>
-            <div class="magnet-value">${magnet.value}€</div>
-            <div class="magnet-ownership">Besitzer: ${gameState.ownershipCount[magnet.series] || 0}</div>
-            <button class="card-button" onclick="buyMagnet('${magnet.id}', ${magnet.value}, '${magnet.series}')">
-                Kaufen
-            </button>
-        `;
-        grid.appendChild(card);
-    });
 }
 
 function updateInventory() {
@@ -310,55 +234,6 @@ function updateSkins() {
 }
 
 // ========== TRANSAKTIONEN ==========
-function buyMagnet(magnetId, price, series) {
-    if (gameState.money < price) {
-        alert('Nicht genug Geld! Du hast ' + gameState.money + '€');
-        return;
-    }
-    
-    const magnet = gameState.marketMagnets.find(m => m.id === magnetId);
-    if (!magnet) return;
-    
-    gameState.money -= price;
-    
-    if (!gameState.inventory[series]) {
-        gameState.inventory[series] = [];
-    }
-    
-    gameState.inventory[series].push({
-        id: magnetId,
-        imageData: magnet.imageData
-    });
-    
-    gameState.ownershipCount[series] = (gameState.ownershipCount[series] || 0) + 1;
-    
-    // Magnet auch auf dem Kühlschrank hinzufügen
-    gameState.magnets.push(new Magnet(magnet.imageData, 100 + Math.random() * 200, 100, series));
-    
-    updateUI();
-    draw();
-}
-
-function sellMagnet(magnetId, value, series) {
-    if (!gameState.inventory[series]) return;
-    
-    const index = gameState.inventory[series].findIndex(m => m.id === magnetId);
-    if (index === -1) return;
-    
-    gameState.inventory[series].splice(index, 1);
-    gameState.money += value;
-    gameState.ownershipCount[series] = Math.max(0, (gameState.ownershipCount[series] || 1) - 1);
-    
-    // Von Kühlschrank entfernen
-    gameState.magnets = gameState.magnets.filter(m => m.id !== magnetId);
-    
-    if (gameState.inventory[series].length === 0) {
-        delete gameState.inventory[series];
-    }
-    
-    updateUI();
-    draw();
-}
 
 function selectFridgeSkin(skinId) {
     gameState.fridgeSkin = skinId;
@@ -881,6 +756,5 @@ setTimeout(() => {
 }, 100);
 
 // ========== INIT ==========
-generateMarketMagnets();
 updateUI();
 draw();
