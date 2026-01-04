@@ -1,5 +1,6 @@
 import pygame
 import os
+import math
 from PIL import Image
 
 pygame.init()
@@ -13,6 +14,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 LIGHT_GRAY = (220, 220, 220)
+GOLD = (255, 215, 0)
+GREEN_HIGHLIGHT = (100, 200, 100)
 
 class Magnet:
     def __init__(self, image_path, x, y):
@@ -20,9 +23,16 @@ class Magnet:
         self.image = pygame.transform.scale(self.image, (80, 80))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.dragging = False
+        self.rarity = "common"
     
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+        if self.rarity == "legendary":
+            glow_rect = self.rect.inflate(6, 6)
+            pygame.draw.rect(surface, GOLD, glow_rect, 3)
+        elif self.rarity == "rare":
+            glow_rect = self.rect.inflate(4, 4)
+            pygame.draw.rect(surface, GREEN_HIGHLIGHT, glow_rect, 2)
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -33,6 +43,80 @@ class Magnet:
         elif event.type == pygame.MOUSEMOTION and self.dragging:
             self.rect.x += event.rel[0]
             self.rect.y += event.rel[1]
+
+
+class CircleTraceGame:
+    def __init__(self):
+        self.active = False
+        self.center = (WIDTH // 2, HEIGHT // 2)
+        self.radius = 140
+        self.tolerance = 4  # schwer: enge Toleranz
+        self.trace_points = []
+        self.holding = False
+        self.result = None  # (status, coverage, avg_dev)
+    
+    def start(self):
+        self.active = True
+        self.trace_points = []
+        self.holding = False
+        self.result = None
+    
+    def handle_event(self, event):
+        if not self.active:
+            return None
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.holding = True
+            self.trace_points = [event.pos]
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if self.holding:
+                self.holding = False
+                self._evaluate()
+        elif event.type == pygame.MOUSEMOTION and self.holding:
+            self.trace_points.append(event.pos)
+        return None
+    
+    def _evaluate(self):
+        if len(self.trace_points) < 30:
+            self.result = ("fail", 0, 999)
+            self.active = False
+            return
+        deviations = []
+        angle_hits = set()
+        for x, y in self.trace_points:
+            dx = x - self.center[0]
+            dy = y - self.center[1]
+            dist = math.hypot(dx, dy)
+            deviations.append(abs(dist - self.radius))
+            angle = int((math.degrees(math.atan2(dy, dx)) + 360) % 360)
+            angle_hits.add(angle)
+        avg_dev = sum(deviations) / len(deviations)
+        coverage = len(angle_hits) / 360.0
+        if avg_dev <= self.tolerance and coverage >= 0.9:
+            self.result = ("legendary", coverage, avg_dev)
+        else:
+            self.result = ("fail", coverage, avg_dev)
+        self.active = False
+    
+    def draw(self, surface):
+        if not self.active and self.result is None:
+            return
+        # Kreis und Hilfsringe
+        pygame.draw.circle(surface, BLACK, self.center, self.radius, 2)
+        pygame.draw.circle(surface, LIGHT_GRAY, self.center, self.radius + self.tolerance, 1)
+        pygame.draw.circle(surface, LIGHT_GRAY, self.center, self.radius - self.tolerance, 1)
+        # Gezeichnete Linie
+        if len(self.trace_points) > 1:
+            pygame.draw.lines(surface, (0, 120, 255), False, self.trace_points, 2)
+        # Statusanzeige
+        font = pygame.font.Font(None, 24)
+        if self.active:
+            txt = font.render("Trace den Kreis so genau wie möglich!", True, BLACK)
+        else:
+            if self.result and self.result[0] == "legendary":
+                txt = font.render("Legendary!", True, GOLD)
+            else:
+                txt = font.render("Leider verfehlt, versuch es erneut.", True, (200, 50, 50))
+        surface.blit(txt, (self.center[0] - txt.get_width() // 2, self.center[1] - self.radius - 30))
 
 class SkinSelector:
     def __init__(self, x, y):
@@ -172,13 +256,8 @@ class Fridge:
     def draw(self, surface):
         if not self.is_open:
             surface.blit(self.closed_image, self.position)
-            # Magneten zeichnen
-            for magnet in self.magnets:
-                magnet.draw(surface)
         else:
-            # Tür offen - zeige offene Grafik
             surface.blit(self.open_image, self.position)
-            # Essen/Items werden hier angezeigt
     
     def toggle_door(self):
         self.is_open = not self.is_open
@@ -186,12 +265,17 @@ class Fridge:
 # Spiel-Variablen
 skin_selector = SkinSelector(450, 10)
 fridge = Fridge()
+trace_game = CircleTraceGame()
 
-# Test-Magnet
-# fridge.magnets.append(Magnet("path/to/image.png", 100, 100))
+# Standard-Magnet, damit immer einer da ist
+base_dir = os.path.dirname(__file__)
+default_magnet_path = os.path.join(base_dir, "Fridges - Green", "Fridge 1.png")
+if os.path.exists(default_magnet_path):
+    fridge.magnets.append(Magnet(default_magnet_path, 200, 250))
 
-# UI für Knopf
+# UI für Knöpfe
 button_rect = pygame.Rect(500, 600, 150, 50)
+trace_button_rect = pygame.Rect(700, 600, 220, 50)
 
 running = True
 while running:
@@ -201,6 +285,8 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if button_rect.collidepoint(event.pos):
                 fridge.toggle_door()
+            if trace_button_rect.collidepoint(event.pos):
+                trace_game.start()
             
             # Skin Selector
             selected = skin_selector.handle_event(event)
@@ -210,6 +296,14 @@ while running:
         
         for magnet in fridge.magnets:
             magnet.handle_event(event)
+
+        # Mini-Game Event Handling
+        trace_game.handle_event(event)
+
+        # Reward: wenn legendary geschafft
+        if trace_game.result and trace_game.result[0] == "legendary":
+            if fridge.magnets:
+                fridge.magnets[0].rarity = "legendary"
     
     screen.fill(WHITE)
     
@@ -218,12 +312,23 @@ while running:
     
     # Fridge zeichnen
     fridge.draw(screen)
+
+    # Magneten zeichnen
+    for magnet in fridge.magnets:
+        magnet.draw(screen)
+
+    # Circle Trace Spiel zeichnen
+    trace_game.draw(screen)
     
     # Button zeichnen
     pygame.draw.rect(screen, (50, 150, 50), button_rect)
     font = pygame.font.Font(None, 24)
     text = font.render("Tür öffnen", True, WHITE)
     screen.blit(text, (button_rect.x + 10, button_rect.y + 15))
+
+    pygame.draw.rect(screen, (50, 50, 180), trace_button_rect)
+    ttext = font.render("Circle Trace starten", True, WHITE)
+    screen.blit(ttext, (trace_button_rect.x + 10, trace_button_rect.y + 15))
     
     pygame.display.flip()
     clock.tick(60)
