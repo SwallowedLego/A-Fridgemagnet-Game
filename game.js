@@ -70,8 +70,8 @@ const fridges = {
 };
 
 const fridge = {
-    x: 50,
-    y: 50,
+    x: 325,
+    y: 75,
     width: 350,
     height: 450
 };
@@ -403,6 +403,44 @@ function updateCuttingPreview() {
     };
 }
 
+function drawShapePath(ctx, x, y, size, shape) {
+    switch(shape) {
+        case 'square':
+            ctx.rect(x - size/2, y - size/2, size, size);
+            break;
+        case 'circle':
+            ctx.arc(x, y, size/2, 0, Math.PI * 2);
+            break;
+        case 'hexagon':
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * Math.PI / 3);
+                const px = x + (size / 2) * Math.cos(angle);
+                const py = y + (size / 2) * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            break;
+        case 'triangle':
+            ctx.moveTo(x, y - size/2);
+            ctx.lineTo(x + size/2, y + size/2);
+            ctx.lineTo(x - size/2, y + size/2);
+            ctx.closePath();
+            break;
+        case 'star':
+            for (let i = 0; i < 10; i++) {
+                const radius = (i % 2 === 0) ? (size / 2) : (size / 4);
+                const angle = (i * Math.PI) / 5 - Math.PI / 2;
+                const px = x + radius * Math.cos(angle);
+                const py = y + radius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            break;
+    }
+}
+
 function drawShape(ctx, x, y, size, shape, fillStyle, strokeStyle) {
     if (fillStyle) ctx.fillStyle = fillStyle;
     if (strokeStyle) {
@@ -703,7 +741,7 @@ function finalizeMagnet() {
         // Draw shape with image
         magnetCtx.save();
         magnetCtx.beginPath();
-        drawShape(magnetCtx, 40, 40, 80, selectedShape, null, null);
+        drawShapePath(magnetCtx, 40, 40, 80, selectedShape);
         magnetCtx.clip();
         
         // Scale image for 80x80
