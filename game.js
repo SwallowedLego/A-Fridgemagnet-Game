@@ -189,7 +189,7 @@ function updateInventory() {
     document.getElementById('totalSeries').textContent = totalSeries;
     
     if (totalMagnets === 0) {
-        grid.innerHTML = '<div class="empty-message">Dein Lager ist leer. Erstelle Magnete durch Bildimport!</div>';
+        grid.innerHTML = '<div class="empty-message">Your inventory is empty. Create magnets by importing images!</div>';
         return;
     }
     
@@ -206,7 +206,7 @@ function updateInventory() {
                 <div style="font-size: 10px; color: #666;">Präzision: ${Math.round(magnet.precision || 0)}%</div>
                 <div class="magnet-value">${value}€</div>
                 <button class="card-button" onclick="sellMagnet('${magnet.id}', ${value}, '${series}')">
-                    Verkaufen
+                    Sell
                 </button>
             `;
             grid.appendChild(card);
@@ -245,7 +245,7 @@ function updateSkins() {
         const buttonDiv = document.createElement('button');
         buttonDiv.className = 'card-button';
         buttonDiv.onclick = () => selectFridgeSkin(skinId);
-        buttonDiv.textContent = isActive ? '✓ Aktiv' : 'Auswählen';
+        buttonDiv.textContent = isActive ? '✓ Active' : 'Select';
         
         card.appendChild(imgElement);
         card.appendChild(nameDiv);
@@ -378,14 +378,14 @@ function updateCuttingPreview() {
     const ctx = cuttingCanvas.getContext('2d');
     ctx.clearRect(0, 0, cuttingCanvas.width, cuttingCanvas.height);
     
-    // Zeichne Hintergrund
+    // Draw background
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, cuttingCanvas.width, cuttingCanvas.height);
     
-    // Zeichne Form
+    // Draw shape
     drawShape(ctx, 200, 200, 120, selectedShape, '#ddd', '#ccc');
     
-    // Zeichne Bild
+    // Draw image
     const img = new Image();
     img.src = currentImageData;
     img.onload = () => {
@@ -475,11 +475,11 @@ function drawStar(ctx, x, y, points, outerRadius, innerRadius, fillStyle, stroke
 function initCuttingGame() {
     const ctx = cuttingGameCanvas.getContext('2d');
     
-    // Zeichne weiße Canvas
+    // Draw white canvas
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, cuttingGameCanvas.width, cuttingGameCanvas.height);
     
-    // Zeichne graue Zielform
+    // Draw gray target shape
     ctx.fillStyle = '#e0e0e0';
     ctx.strokeStyle = '#999';
     ctx.lineWidth = 4;
@@ -489,7 +489,7 @@ function initCuttingGame() {
     ctx.fillStyle = '#333';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Tracen wie Perfect Circle', 200, 30);
+    ctx.fillText('Trace the shape accurately', 200, 30);
     
     // Starte Drawing
     let isDrawing = false;
@@ -509,7 +509,7 @@ function initCuttingGame() {
         
         drawnPoints.push({x, y});
         
-        // Zeichne User Line
+        // Draw user line
         ctx.strokeStyle = '#0078d7';
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
@@ -529,7 +529,7 @@ function initCuttingGame() {
         isDrawing = false;
         
         if (drawnPoints.length < 10) {
-            alert('Bitte zeichne die Form aus!');
+            alert('Please draw the shape!');
             initCuttingGame();
             return;
         }
@@ -538,7 +538,7 @@ function initCuttingGame() {
         const precision = calculateDrawingPrecision(drawnPoints, selectedShape);
         cuttingState.precision = precision;
         
-        // Bestimme Rarity
+        // Determine rarity
         if (precision >= 90) {
             cuttingState.rarity = 'legendary';
             cuttingState.value = Math.floor(800 + precision * 10);
@@ -553,7 +553,7 @@ function initCuttingGame() {
             cuttingState.value = Math.floor(10 + precision);
         }
         
-        // Update Display
+        // Update display
         const precisionDisplay = document.getElementById('precisionDisplay');
         const rarityColor = {
             'common': '#888',
@@ -563,12 +563,12 @@ function initCuttingGame() {
         };
         
         precisionDisplay.innerHTML = `
-            <div>Präzision: <span style="color: ${rarityColor[cuttingState.rarity]}; font-size: 16px;">${Math.round(precision)}%</span></div>
-            <div style="font-size: 11px; color: ${rarityColor[cuttingState.rarity]};">Seltenheit: ${cuttingState.rarity.toUpperCase()}</div>
-            <div style="font-size: 12px; color: #27ae60;">Wert: ${cuttingState.value}€</div>
+            <div>Precision: <span style="color: ${rarityColor[cuttingState.rarity]}; font-size: 16px;">${Math.round(precision)}%</span></div>
+            <div style="font-size: 11px; color: ${rarityColor[cuttingState.rarity]};">Rarity: ${cuttingState.rarity.toUpperCase()}</div>
+            <div style="font-size: 12px; color: #27ae60;">Value: ${cuttingState.value}€</div>
         `;
         
-        // Zeige Ergebnis auf Canvas
+        // Show result on canvas
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = '#0078d7';
         drawShape(ctx, 200, 200, 140, selectedShape, '#0078d7', '#0078d7');
@@ -681,7 +681,7 @@ function generateShapePoints(shape, x, y, size) {
 
 function finalizeMagnet() {
     if (cuttingState.precision === 0) {
-        alert('Bitte schneide den Magneten zuerst!');
+        alert('Please trace the shape first!');
         return;
     }
     

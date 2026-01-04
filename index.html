@@ -11,22 +11,22 @@
         <!-- Navigation -->
         <div class="navbar">
             <div class="nav-items">
-                <button class="nav-btn active" data-tab="game">Spiel</button>
-                <button class="nav-btn" data-tab="inventory">Mein Lager</button>
-                <button class="nav-btn" data-tab="skins">Kühlschränke</button>
+                <button class="nav-btn active" data-tab="game">Game</button>
+                <button class="nav-btn" data-tab="inventory">My Inventory</button>
+                <button class="nav-btn" data-tab="skins">Fridges</button>
             </div>
             <div class="wallet">
-                Geld: <span id="money">1000</span>€
+                Money: <span id="money">1000</span>€
             </div>
         </div>
 
         <!-- Game Tab -->
         <div class="tab-content active" id="game-tab">
             <div class="container">
-                <h1>Kühlschrank Magnet Spiel</h1>
+                <h1>Fridge Magnet Game</h1>
                 <canvas id="gameCanvas" width="1000" height="600"></canvas>
                 <div class="controls">
-                    <button id="toggleDoor">Magnet hinzufügen</button>
+                    <button id="toggleDoor">Add Magnet</button>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                 </div>
             </div>
@@ -35,14 +35,14 @@
         <!-- Inventory Tab -->
         <div class="tab-content" id="inventory-tab">
             <div class="container">
-                <h1>Mein Lager</h1>
+                <h1>My Inventory</h1>
                 <div class="inventory-stats">
                     <div class="stat">
-                        <span>Gesamte Magnete:</span>
+                        <span>Total Magnets:</span>
                         <span id="totalMagnets">0</span>
                     </div>
                     <div class="stat">
-                        <span>Unterschiedliche Serien:</span>
+                        <span>Different Series:</span>
                         <span id="totalSeries">0</span>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
         <!-- Skins Tab -->
         <div class="tab-content" id="skins-tab">
             <div class="container">
-                <h1>Kühlschrank Skins</h1>
+                <h1>Fridge Skins</h1>
                 <div class="skins-grid" id="skinsGrid"></div>
             </div>
         </div>
@@ -63,24 +63,24 @@
     <div id="imageModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Magnet erstellen</h2>
+                <h2>Create Magnet</h2>
                 <button class="modal-close" onclick="closeImageModal()">×</button>
             </div>
             
             <div class="modal-body">
                 <div class="modal-section">
-                    <h3>1. Form auswählen</h3>
+                    <h3>1. Select Shape</h3>
                     <div class="shape-buttons">
-                        <button class="shape-btn" onclick="selectShape('square')" data-shape="square">Quadrat</button>
-                        <button class="shape-btn" onclick="selectShape('circle')" data-shape="circle">Kreis</button>
-                        <button class="shape-btn" onclick="selectShape('hexagon')" data-shape="hexagon">Sechseck</button>
-                        <button class="shape-btn" onclick="selectShape('triangle')" data-shape="triangle">Dreieck</button>
-                        <button class="shape-btn" onclick="selectShape('star')" data-shape="star">Stern</button>
+                        <button class="shape-btn" onclick="selectShape('square')" data-shape="square">Square</button>
+                        <button class="shape-btn" onclick="selectShape('circle')" data-shape="circle">Circle</button>
+                        <button class="shape-btn" onclick="selectShape('hexagon')" data-shape="hexagon">Hexagon</button>
+                        <button class="shape-btn" onclick="selectShape('triangle')" data-shape="triangle">Triangle</button>
+                        <button class="shape-btn" onclick="selectShape('star')" data-shape="star">Star</button>
                     </div>
                 </div>
 
                 <div class="modal-section">
-                    <h3>2. Bild positionieren</h3>
+                    <h3>2. Position Image</h3>
                     <div class="cutting-area">
                         <canvas id="cuttingCanvas" width="400" height="400"></canvas>
                         <div class="cutting-controls">
@@ -92,8 +92,8 @@
                 </div>
 
                 <div class="modal-section">
-                    <h3>3. Tracen wie Perfect Circle</h3>
-                    <p style="font-size: 11px; color: #666;">Zeichne die Form nach (wie bei Perfect Circle). Je genauer desto besser der Wert!</p>
+                    <h3>3. Trace Like Perfect Circle</h3>
+                    <p style="font-size: 11px; color: #666;">Draw the shape as accurately as possible (like Perfect Circle). The more precise, the better the rarity!</p>
                     <div class="cutting-game-area">
                         <canvas id="cuttingGameCanvas" width="400" height="400"></canvas>
                         <div id="precisionDisplay">
@@ -104,8 +104,8 @@
             </div>
 
             <div class="modal-footer">
-                <button onclick="closeImageModal()" class="btn-secondary">Abbrechen</button>
-                <button onclick="finalizeMagnet()" class="btn-primary">Magnet erstellen</button>
+                <button onclick="closeImageModal()" class="btn-secondary">Cancel</button>
+                <button onclick="finalizeMagnet()" class="btn-primary">Create Magnet</button>
             </div>
         </div>
     </div>
