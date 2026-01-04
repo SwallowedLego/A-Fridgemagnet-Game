@@ -16,6 +16,9 @@ GRAY = (200, 200, 200)
 LIGHT_GRAY = (220, 220, 220)
 GOLD = (255, 215, 0)
 GREEN_HIGHLIGHT = (100, 200, 100)
+PIXEL_BG = (215, 228, 222)
+PIXEL_PANEL = (188, 204, 197)
+PIXEL_BORDER = (44, 62, 60)
 
 class Magnet:
     def __init__(self, image_path, x, y):
@@ -29,7 +32,7 @@ class Magnet:
         surface.blit(self.image, self.rect)
         if self.rarity == "legendary":
             glow_rect = self.rect.inflate(6, 6)
-            pygame.draw.rect(surface, GOLD, glow_rect, 3)
+            pygame.draw.rect(surface, PIXEL_BORDER, glow_rect, 3)
         elif self.rarity == "rare":
             glow_rect = self.rect.inflate(4, 4)
             pygame.draw.rect(surface, GREEN_HIGHLIGHT, glow_rect, 2)
@@ -101,7 +104,7 @@ class CircleTraceGame:
         if not self.active and self.result is None:
             return
         # Kreis und Hilfsringe
-        pygame.draw.circle(surface, BLACK, self.center, self.radius, 2)
+        pygame.draw.circle(surface, PIXEL_BORDER, self.center, self.radius, 2)
         pygame.draw.circle(surface, LIGHT_GRAY, self.center, self.radius + self.tolerance, 1)
         pygame.draw.circle(surface, LIGHT_GRAY, self.center, self.radius - self.tolerance, 1)
         # Gezeichnete Linie
@@ -161,7 +164,7 @@ class SkinSelector:
     def draw(self, surface):
         # Bereich für Skin Selector
         selector_height = self.icon_size + 2 * self.spacing
-        pygame.draw.rect(surface, LIGHT_GRAY, (self.position[0], self.position[1], WIDTH - self.position[0] - 20, selector_height))
+        pygame.draw.rect(surface, PIXEL_PANEL, (self.position[0], self.position[1], WIDTH - self.position[0] - 20, selector_height))
         pygame.draw.rect(surface, BLACK, (self.position[0], self.position[1], WIDTH - self.position[0] - 20, selector_height), 2)
         
         # Zeichne Skins
@@ -182,11 +185,11 @@ class SkinSelector:
                 )
                 
                 if self.selected_skin == i:
-                    pygame.draw.rect(surface, (100, 200, 100), button_rect)
+                    pygame.draw.rect(surface, GREEN_HIGHLIGHT, button_rect)
                 else:
                     pygame.draw.rect(surface, GRAY, button_rect)
                 
-                pygame.draw.rect(surface, BLACK, button_rect, 2)
+                pygame.draw.rect(surface, PIXEL_BORDER, button_rect, 2)
                 
                 # Button Text
                 font = pygame.font.Font(None, 16)
@@ -305,7 +308,7 @@ while running:
             if fridge.magnets:
                 fridge.magnets[0].rarity = "legendary"
     
-    screen.fill(WHITE)
+    screen.fill(PIXEL_BG)
     
     # Skin Selector zeichnen
     skin_selector.draw(screen)
@@ -321,13 +324,15 @@ while running:
     trace_game.draw(screen)
     
     # Button zeichnen
-    pygame.draw.rect(screen, (50, 150, 50), button_rect)
+    pygame.draw.rect(screen, PIXEL_PANEL, button_rect)
+    pygame.draw.rect(screen, PIXEL_BORDER, button_rect, 3)
     font = pygame.font.Font(None, 24)
-    text = font.render("Tür öffnen", True, WHITE)
+    text = font.render("Tür öffnen", True, BLACK)
     screen.blit(text, (button_rect.x + 10, button_rect.y + 15))
 
-    pygame.draw.rect(screen, (50, 50, 180), trace_button_rect)
-    ttext = font.render("Circle Trace starten", True, WHITE)
+    pygame.draw.rect(screen, PIXEL_PANEL, trace_button_rect)
+    pygame.draw.rect(screen, PIXEL_BORDER, trace_button_rect, 3)
+    ttext = font.render("Circle Trace starten", True, BLACK)
     screen.blit(ttext, (trace_button_rect.x + 10, trace_button_rect.y + 15))
     
     pygame.display.flip()
