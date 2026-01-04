@@ -108,15 +108,28 @@ body {
     padding: 12px;
     border-radius: 0;
     border: 3px solid var(--pixel-border);
-    box-shadow: 3px 3px 0 var(--pixel-shadow);
+    box-shadow: 3px 3px 0 var(--pixel-shadow), -2px -2px 0 #7aa58f, 2px -2px 0 #7aa58f;
+    position: relative;
 }
 
 .container::before {
-    content: '';
-    display: block;
-    background: linear-gradient(180deg, #f9f9f9 0%, #f0f0f0 100%);
-    padding: 10px;
-    margin: -2px -2px 10px -2px;
+    content: '✿';
+    position: absolute;
+    top: -18px;
+    left: 20px;
+    font-size: 18px;
+    color: #7aa58f;
+    font-weight: bold;
+}
+
+.container::after {
+    content: '✿';
+    position: absolute;
+    top: -18px;
+    right: 20px;
+    font-size: 18px;
+    color: #7aa58f;
+    font-weight: bold;
 }
 
 h1 {
@@ -140,7 +153,11 @@ h1 {
     cursor: grab;
     max-width: 100%;
     margin-bottom: 12px;
-    box-shadow: 3px 3px 0 var(--pixel-shadow);
+    box-shadow: 3px 3px 0 var(--pixel-shadow),
+                -4px -4px 0 #7aa58f,
+                -4px 0 0 #7aa58f,
+                4px -4px 0 #7aa58f,
+                4px 0 0 #7aa58f;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
@@ -206,7 +223,18 @@ button:focus {
     text-align: center;
     transition: transform 0.05s;
     cursor: pointer;
-    box-shadow: 3px 3px 0 var(--pixel-shadow);
+    box-shadow: 3px 3px 0 var(--pixel-shadow), -1px -1px 0 #7aa58f;
+    position: relative;
+}
+
+.magnet-card::after, .skin-card::after {
+    content: '✿';
+    position: absolute;
+    top: -12px;
+    right: 6px;
+    font-size: 12px;
+    color: #7aa58f;
+    font-weight: bold;
 }
 
 .magnet-card:hover, .skin-card:hover {
@@ -310,6 +338,17 @@ button:focus {
     font-size: 11px;
     border: 3px solid var(--pixel-border);
     box-shadow: 2px 2px 0 var(--pixel-shadow);
+    position: relative;
+}
+
+.stat::before {
+    content: '✿';
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    font-size: 14px;
+    color: #7aa58f;
+    font-weight: bold;
 }
 
 .stat span:last-child {
@@ -348,6 +387,27 @@ button:focus {
     overflow-y: auto;
     border: 3px solid var(--pixel-border);
     box-shadow: 4px 4px 0 var(--pixel-shadow);
+    position: relative;
+}
+
+.modal-content::before {
+    content: '✿';
+    position: absolute;
+    top: -20px;
+    left: 30px;
+    font-size: 16px;
+    color: #7aa58f;
+    font-weight: bold;
+}
+
+.modal-content::after {
+    content: '✿';
+    position: absolute;
+    top: -20px;
+    right: 30px;
+    font-size: 16px;
+    color: #7aa58f;
+    font-weight: bold;
 }
 
 .modal-header {
