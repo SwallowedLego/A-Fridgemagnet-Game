@@ -100,7 +100,7 @@ class Magnet {
                 ctx.fillRect(this.x, this.y, this.width, this.height);
                 ctx.fillStyle = '#666';
                 ctx.font = '12px Arial';
-                ctx.fillText('Bild', this.x + 20, this.y + 40);
+                ctx.fillText('Image', this.x + 20, this.y + 40);
             }
         }
     }
@@ -111,7 +111,7 @@ class Magnet {
     }
 }
 
-// ========== KÜHLSCHRANK ZEICHNEN MIT SPRITES ==========
+// ========== DRAW FRIDGE WITH SPRITES ==========
 function drawFridge() {
     const fridgeConfig = fridges[gameState.fridgeSkin];
     
@@ -120,26 +120,26 @@ function drawFridge() {
         return;
     }
     
-    // Lade und zeichne das Sprite-Bild im Pixel-Art Stil
+    // Load and draw sprite image in pixel-art style
     const img = new Image();
     img.src = fridgeConfig.closed;
     
     img.onload = () => {
-        // Pixel-Art Rendering: Keine Glättung
+        // Pixel-Art rendering: No smoothing
         ctx.imageSmoothingEnabled = false;
         ctx.webkitImageSmoothingEnabled = false;
         ctx.msImageSmoothingEnabled = false;
         ctx.mozImageSmoothingEnabled = false;
         
-        // Skaliere Bild auf die Kühlschrank-Größe
+        // Scale image to fridge size
         ctx.drawImage(img, fridge.x, fridge.y, fridge.width, fridge.height);
         
-        // Pixel-Art Effekt: Re-enable smoothing für andere Elemente
+        // Pixel-Art effect: Re-enable smoothing for other elements
         ctx.imageSmoothingEnabled = true;
     };
     
     img.onerror = () => {
-        // Fallback: Zeichne einfache Grafik
+        // Fallback: Draw simple graphics
         ctx.fillStyle = gameState.fridgeSkin.includes('white') ? '#e8e8e8' : '#a8c8d8';
         ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
         ctx.strokeStyle = '#666';
@@ -148,18 +148,18 @@ function drawFridge() {
     };
 }
 
-// ========== SPIEL ZEICHNEN ==========
+// ========== DRAW GAME ==========
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Hintergrund
+    // Background
     ctx.fillStyle = PIXEL_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Kühlschrank
+    // Fridge
     drawFridge();
     
-    // Magneten
+    // Magnets
     gameState.magnets.forEach(magnet => magnet.draw());
 }
 
@@ -700,13 +700,13 @@ function finalizeMagnet() {
         magnetCanvas.height = 80;
         const magnetCtx = magnetCanvas.getContext('2d');
         
-        // Zeichne Form mit Bild
+        // Draw shape with image
         magnetCtx.save();
         magnetCtx.beginPath();
         drawShape(magnetCtx, 40, 40, 80, selectedShape, null, null);
         magnetCtx.clip();
         
-        // Skaliere Bild für 80x80
+        // Scale image for 80x80
         const scale = 80 / 160;
         magnetCtx.drawImage(img, 
             (x - 200) * scale + 40, 
@@ -717,7 +717,7 @@ function finalizeMagnet() {
         
         const magnetImage = magnetCanvas.toDataURL();
         
-        // Füge zu Inventory hinzu
+        // Add to inventory
         const series = `${cuttingState.rarity.toUpperCase()}-${Date.now()}`;
         if (!gameState.inventory[series]) {
             gameState.inventory[series] = [];
@@ -735,14 +735,14 @@ function finalizeMagnet() {
         gameState.money += cuttingState.value;
         gameState.ownershipCount[series] = 1;
         
-        // Magnet auf Kühlschrank
+        // Add magnet to fridge
         gameState.magnets.push(new Magnet(magnetImage, 100 + Math.random() * 200, 100, series));
         
         closeImageModal();
         updateUI();
         draw();
         
-        alert(`Magnet erstellt!\nPräzision: ${Math.round(cuttingState.precision)}%\nWert: ${cuttingState.value}€ (${cuttingState.rarity})`);
+        alert(`Magnet Created!\nPrecision: ${Math.round(cuttingState.precision)}%\nValue: ${cuttingState.value}€ (${cuttingState.rarity.toUpperCase()})`);
     };
 }
 
