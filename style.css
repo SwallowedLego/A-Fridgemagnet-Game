@@ -112,26 +112,6 @@ body {
     position: relative;
 }
 
-.container::before {
-    content: '✿';
-    position: absolute;
-    top: -18px;
-    left: 20px;
-    font-size: 18px;
-    color: #7aa58f;
-    font-weight: bold;
-}
-
-.container::after {
-    content: '✿';
-    position: absolute;
-    top: -18px;
-    right: 20px;
-    font-size: 18px;
-    color: #7aa58f;
-    font-weight: bold;
-}
-
 h1 {
     text-align: center;
     color: var(--pixel-text);
@@ -225,16 +205,6 @@ button:focus {
     cursor: pointer;
     box-shadow: 3px 3px 0 var(--pixel-shadow), -1px -1px 0 #7aa58f;
     position: relative;
-}
-
-.magnet-card::after, .skin-card::after {
-    content: '✿';
-    position: absolute;
-    top: -12px;
-    right: 6px;
-    font-size: 12px;
-    color: #7aa58f;
-    font-weight: bold;
 }
 
 .magnet-card:hover, .skin-card:hover {
@@ -341,16 +311,6 @@ button:focus {
     position: relative;
 }
 
-.stat::before {
-    content: '✿';
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    font-size: 14px;
-    color: #7aa58f;
-    font-weight: bold;
-}
-
 .stat span:last-child {
     font-weight: bold;
     color: #003399;
@@ -388,26 +348,6 @@ button:focus {
     border: 3px solid var(--pixel-border);
     box-shadow: 4px 4px 0 var(--pixel-shadow);
     position: relative;
-}
-
-.modal-content::before {
-    content: '✿';
-    position: absolute;
-    top: -20px;
-    left: 30px;
-    font-size: 16px;
-    color: #7aa58f;
-    font-weight: bold;
-}
-
-.modal-content::after {
-    content: '✿';
-    position: absolute;
-    top: -20px;
-    right: 30px;
-    font-size: 16px;
-    color: #7aa58f;
-    font-weight: bold;
 }
 
 .modal-header {
