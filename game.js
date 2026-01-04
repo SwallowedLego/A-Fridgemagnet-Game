@@ -7,6 +7,11 @@ ctx.webkitImageSmoothingEnabled = false;
 ctx.msImageSmoothingEnabled = false;
 ctx.mozImageSmoothingEnabled = false;
 
+// Pixel-Palette
+const PIXEL_BG = 'rgb(215, 228, 222)';
+const PIXEL_PANEL = 'rgb(188, 204, 197)';
+const PIXEL_BORDER = 'rgb(44, 62, 60)';
+
 // ========== SPIEL-STATE ==========
 let gameState = {
     money: 1000,
@@ -148,7 +153,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Hintergrund
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = PIXEL_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Kühlschrank
@@ -235,7 +240,7 @@ function updateSkins() {
         
         const nameDiv = document.createElement('div');
         nameDiv.className = 'magnet-series';
-        nameDiv.textContent = skinId.replace('green', '🟢 Green ').replace('white', '⚪ White ');
+        nameDiv.textContent = skinId.replace('green', 'Green ').replace('white', 'White ');
         
         const buttonDiv = document.createElement('button');
         buttonDiv.className = 'card-button';
