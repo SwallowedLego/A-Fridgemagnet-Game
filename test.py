@@ -35,23 +35,32 @@ class Magnet:
 class Fridge:
     def __init__(self):
         self.is_open = False
-        self.closed_image = pygame.Surface((350, 450))
-        self.closed_image.fill((150, 150, 200))
+        # Lade echte Kühlschrank Sprites
+        fridge_closed_path = os.path.join(os.path.dirname(__file__), "Fridges - Green", "Fridge 1 - Empty.png")
+        fridge_open_path = os.path.join(os.path.dirname(__file__), "Fridges - Green", "Fridge 1.png")
+        
+        try:
+            self.closed_image = pygame.image.load(fridge_closed_path)
+            self.open_image = pygame.image.load(fridge_open_path)
+        except:
+            # Fallback wenn Bilder nicht gefunden
+            self.closed_image = pygame.Surface((350, 450))
+            self.closed_image.fill((150, 150, 200))
+            self.open_image = pygame.Surface((350, 450))
+            self.open_image.fill((100, 100, 150))
+        
         self.magnets = []
+        self.position = (50, 50)
     
     def draw(self, surface):
         if not self.is_open:
-            surface.blit(self.closed_image, (50, 50))
-            pygame.draw.rect(surface, BLACK, (50, 50, 350, 450), 3)
+            surface.blit(self.closed_image, self.position)
             # Magneten zeichnen
             for magnet in self.magnets:
                 magnet.draw(surface)
         else:
-            # Tür offen - andere Grafik
-            open_image = pygame.Surface((350, 450))
-            open_image.fill((100, 100, 150))
-            surface.blit(open_image, (50, 50))
-            pygame.draw.rect(surface, BLACK, (50, 50, 350, 450), 3)
+            # Tür offen - zeige offene Grafik
+            surface.blit(self.open_image, self.position)
             # Essen/Items werden hier angezeigt
     
     def toggle_door(self):
