@@ -12,6 +12,15 @@ const PIXEL_BG = 'rgb(215, 228, 222)';
 const PIXEL_PANEL = 'rgb(188, 204, 197)';
 const PIXEL_BORDER = 'rgb(44, 62, 60)';
 
+// Sound für Magnete
+function playMagnetSound() {
+    const audio = new Audio('audimomass-output.mp3');
+    // Variierende Tonhöhe zwischen 0.9 und 1.1 (±10%)
+    audio.playbackRate = 0.9 + Math.random() * 0.2;
+    audio.volume = 0.5;
+    audio.play().catch(err => console.log('Audio playback failed:', err));
+}
+
 // ========== SPIEL-STATE ==========
 let gameState = {
     money: 1000,
@@ -295,6 +304,8 @@ canvas.addEventListener('mouseup', () => {
     if (draggedMagnet) {
         draggedMagnet.dragging = false;
         draggedMagnet = null;
+        // Sound mit variabler Tonhöhe abspielen
+        playMagnetSound();
     }
 });
 
