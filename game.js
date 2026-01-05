@@ -17,7 +17,8 @@ const fridgeImageCache = {};
 
 // Sound für Magnete
 function playMagnetSound() {
-    const audio = new Audio('audimomass-output.mp3');
+    // Dateiname korrigiert: audiomass-output.mp3 (liegt im Projekt-Root)
+    const audio = new Audio('audiomass-output.mp3');
     // Variierende Tonhöhe zwischen 0.9 und 1.1 (±10%)
     audio.playbackRate = 0.9 + Math.random() * 0.2;
     audio.volume = 0.5;
@@ -178,6 +179,18 @@ function draw() {
 
     // Fridge oben halten
     drawFridge();
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1) Kühlschrank zeichnen (Hintergrund)
+    drawFridge();
+
+    // 2) Magnete oben drauf
+    gameState.magnets.forEach(m => drawMagnet(m));
+
+    requestAnimationFrame(render);
 }
 
 // ========== MAGNET KAUFEN/VERKAUFEN ==========
@@ -536,17 +549,17 @@ function initCuttingGame() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, cuttingGameCanvas.width, cuttingGameCanvas.height);
     
-    // Draw gray target shape
-    ctx.fillStyle = '#e0e0e0';
+    // Draw ONLY the outline of the target shape (no gray fill)
+    ctx.fillStyle = 'transparent';
     ctx.strokeStyle = '#999';
     ctx.lineWidth = 4;
-    drawShape(ctx, 200, 200, 140, selectedShape, '#e0e0e0', '#999');
+    drawShape(ctx, 200, 200, 140, selectedShape, null, '#999');
     
     // Label
     ctx.fillStyle = '#333';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Trace the shape accurately', 200, 30);
+    ctx.fillText('Trace the shape accurately on the line', 200, 30);
     
     // Starte Drawing
     let isDrawing = false;
@@ -586,28 +599,28 @@ function initCuttingGame() {
         isDrawing = false;
         
         if (drawnPoints.length < 10) {
-            alert('Please draw the shape!');
+            alert('Please trace the shape!');
             initCuttingGame();
             return;
         }
         
-        // Berechne Präzision
-        const precision = calculateDrawingPrecision(drawnPoints, selectedShape);
+        // Berechne Präzision basierend auf Nähe zur idealen Linie
+        const precision = calculateEdgePrecision(drawnPoints, selectedShape);
         cuttingState.precision = precision;
         
-        // Determine rarity
-        if (precision >= 90) {
+        // Determine rarity (strenger bewerten)
+        if (precision >= 85) {
             cuttingState.rarity = 'legendary';
-            cuttingState.value = Math.floor(800 + precision * 10);
-        } else if (precision >= 75) {
+            cuttingState.value = Math.floor(1000 + precision * 20);
+        } else if (precision >= 70) {
             cuttingState.rarity = 'epic';
-            cuttingState.value = Math.floor(300 + precision * 5);
+            cuttingState.value = Math.floor(400 + precision * 8);
         } else if (precision >= 50) {
             cuttingState.rarity = 'rare';
-            cuttingState.value = Math.floor(100 + precision * 2);
+            cuttingState.value = Math.floor(150 + precision * 3);
         } else {
             cuttingState.rarity = 'common';
-            cuttingState.value = Math.floor(10 + precision);
+            cuttingState.value = Math.floor(20 + precision);
         }
         
         // Update display
@@ -625,26 +638,38 @@ function initCuttingGame() {
             <div style="font-size: 12px; color: #27ae60;">Value: ${cuttingState.value}€</div>
         `;
         
-        // Show result on canvas
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = '#0078d7';
-        drawShape(ctx, 200, 200, 140, selectedShape, '#0078d7', '#0078d7');
+        // Show result on canvas (highlight drawn line)
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = '#0078d7';
+        ctx.lineWidth = 15;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        if (drawnPoints.length > 0) {
+            ctx.moveTo(drawnPoints[0].x, drawnPoints[0].y);
+            for (let i = 1; i < drawnPoints.length; i++) {
+                ctx.lineTo(drawnPoints[i].x, drawnPoints[i].y);
+            }
+        }
+        ctx.stroke();
         ctx.globalAlpha = 1;
     });
 }
 
-function calculateDrawingPrecision(drawnPoints, shape) {
-    // Generiere ideale Punkte für die Form
-    const idealPoints = generateShapePoints(shape, 200, 200, 140);
+function calculateEdgePrecision(drawnPoints, shape) {
+    // Generiere ideale Kantenpunkte für die Form
+    const idealEdgePoints = generateShapeEdgePoints(shape, 200, 200, 70);
     
-    if (drawnPoints.length === 0 || idealPoints.length === 0) return 0;
+    if (drawnPoints.length === 0 || idealEdgePoints.length === 0) return 0;
     
-    // Vereinfachter Vergleich: Durchschnittlicher Abstand
+    // Berechne durchschnittlichen Abstand zur idealen Kante
     let totalDistance = 0;
+    let pointsNearEdge = 0;
+    const tolerance = 15; // Punkte innerhalb von 15px gelten als "auf der Kante"
     
     for (let drawnPoint of drawnPoints) {
         let minDist = Infinity;
-        for (let idealPoint of idealPoints) {
+        for (let idealPoint of idealEdgePoints) {
             const dist = Math.sqrt(
                 Math.pow(drawnPoint.x - idealPoint.x, 2) +
                 Math.pow(drawnPoint.y - idealPoint.y, 2)
@@ -652,13 +677,19 @@ function calculateDrawingPrecision(drawnPoints, shape) {
             minDist = Math.min(minDist, dist);
         }
         totalDistance += minDist;
+        if (minDist <= tolerance) {
+            pointsNearEdge++;
+        }
     }
     
     const avgDistance = totalDistance / drawnPoints.length;
     
-    // Konvertiere in Präzision (0-100%)
-    // 0px Abstand = 100%, 100px Abstand = 0%
-    let precision = Math.max(0, 100 - avgDistance);
+    // Strenge Bewertung: max 100% bei 0px Abstand, fällt schnell ab
+    let precision = Math.max(0, 100 - (avgDistance * 2));
+    
+    // Bonus: Wie viel % der Punkte waren auf der Kante?
+    const edgeCoverage = (pointsNearEdge / drawnPoints.length) * 100;
+    precision = (precision + edgeCoverage) / 2;
     
     // Bonus für geschlossene Form
     if (drawnPoints.length > 5) {
@@ -669,72 +700,101 @@ function calculateDrawingPrecision(drawnPoints, shape) {
             Math.pow(firstPoint.y - lastPoint.y, 2)
         );
         
-        if (closureDistance < 50) {
-            precision += 10;
+        if (closureDistance < 30) {
+            precision += 15;
         }
     }
     
     return Math.min(100, Math.max(0, precision));
 }
 
-function generateShapePoints(shape, x, y, size) {
+function generateShapeEdgePoints(shape, x, y, radius) {
     let points = [];
     
     switch(shape) {
         case 'circle':
-            for (let i = 0; i < 360; i += 5) {
+            for (let i = 0; i < 360; i += 2) {
                 const angle = (i * Math.PI) / 180;
-                points.push({
-                    x: x + (size / 2) * Math.cos(angle),
-                    y: y + (size / 2) * Math.sin(angle)
-                });
-            }
-            break;
-            
-        case 'square':
-            const half = size / 2;
-            for (let i = -half; i < half; i += 5) {
-                points.push({x: x + i, y: y - half});
-                points.push({x: x + half, y: y + i});
-                points.push({x: x - i, y: y + half});
-                points.push({x: x - half, y: y - i});
-            }
-            break;
-            
-        case 'hexagon':
-            for (let i = 0; i < 6; i++) {
-                const angle = (i * Math.PI / 3);
-                points.push({
-                    x: x + (size / 2) * Math.cos(angle),
-                    y: y + (size / 2) * Math.sin(angle)
-                });
-            }
-            break;
-            
-        case 'triangle':
-            for (let i = 0; i < 3; i++) {
-                const angle = (i * 2 * Math.PI / 3) - Math.PI / 2;
-                points.push({
-                    x: x + (size / 2) * Math.cos(angle),
-                    y: y + (size / 2) * Math.sin(angle)
-                });
-            }
-            break;
-            
-        case 'star':
-            for (let i = 0; i < 10; i++) {
-                const radius = (i % 2 === 0) ? (size / 2) : (size / 4);
-                const angle = (i * Math.PI) / 5 - Math.PI / 2;
                 points.push({
                     x: x + radius * Math.cos(angle),
                     y: y + radius * Math.sin(angle)
                 });
             }
             break;
+            
+        case 'square':
+            const half = radius;
+            // Top
+            for (let i = -half; i <= half; i += 2) {
+                points.push({x: x + i, y: y - half});
+            }
+            // Right
+            for (let i = -half; i <= half; i += 2) {
+                points.push({x: x + half, y: y + i});
+            }
+            // Bottom
+            for (let i = half; i >= -half; i -= 2) {
+                points.push({x: x + i, y: y + half});
+            }
+            // Left
+            for (let i = half; i >= -half; i -= 2) {
+                points.push({x: x - half, y: y + i});
+            }
+            break;
+            
+        case 'hexagon':
+            for (let i = 0; i < 6; i++) {
+                const angle1 = (i * Math.PI / 3);
+                const angle2 = ((i + 1) * Math.PI / 3);
+                const steps = 30;
+                for (let s = 0; s <= steps; s++) {
+                    const angle = angle1 + (angle2 - angle1) * (s / steps);
+                    points.push({
+                        x: x + radius * Math.cos(angle),
+                        y: y + radius * Math.sin(angle)
+                    });
+                }
+            }
+            break;
+            
+        case 'triangle':
+            for (let i = 0; i < 3; i++) {
+                const angle1 = (i * 2 * Math.PI / 3) - Math.PI / 2;
+                const angle2 = ((i + 1) * 2 * Math.PI / 3) - Math.PI / 2;
+                const steps = 30;
+                for (let s = 0; s <= steps; s++) {
+                    const angle = angle1 + (angle2 - angle1) * (s / steps);
+                    points.push({
+                        x: x + radius * Math.cos(angle),
+                        y: y + radius * Math.sin(angle)
+                    });
+                }
+            }
+            break;
+            
+        case 'star':
+            for (let i = 0; i < 10; i++) {
+                const radius1 = (i % 2 === 0) ? radius : (radius / 2);
+                const angle1 = (i * Math.PI) / 5 - Math.PI / 2;
+                const radius2 = ((i + 1) % 2 === 0) ? radius : (radius / 2);
+                const angle2 = ((i + 1) * Math.PI) / 5 - Math.PI / 2;
+                const steps = 20;
+                for (let s = 0; s <= steps; s++) {
+                    const r = radius1 + (radius2 - radius1) * (s / steps);
+                    const angle = angle1 + (angle2 - angle1) * (s / steps);
+                    points.push({
+                        x: x + r * Math.cos(angle),
+                        y: y + r * Math.sin(angle)
+                    });
+                }
+            }
+            break;
     }
     
     return points;
 }
+
+// ========== TRANSAKTIONEN ==========
 
 function finalizeMagnet() {
     if (cuttingState.precision === 0) {
