@@ -120,23 +120,55 @@ class Magnet {
         this.series = series;
         this.id = Date.now() + Math.random();
         this.velocityY = 0;
-        this.gravity = 0.5;
+        this.velocityX = 0;
+        this.gravity = 0.6;
+        this.friction = 0.98;
+        this.lastX = x;
+        this.lastY = y;
     }
     
     update() {
-        // Apply gravity wenn nicht dragging
+        // Apply physics wenn nicht dragging
         if (!this.dragging) {
+            // Gravity
             this.velocityY += this.gravity;
+            
+            // Apply friction
+            this.velocityX *= this.friction;
+            
+            // Update position
+            this.x += this.velocityX;
             this.y += this.velocityY;
+            
+            // Bounce off walls
+            if (this.x < 0) {
+                this.x = 0;
+                this.velocityX = -this.velocityX * 0.5;
+            }
+            if (this.x + this.width > canvas.width) {
+                this.x = canvas.width - this.width;
+                this.velocityX = -this.velocityX * 0.5;
+            }
             
             // Stoppe am Boden (canvas height - magnet height)
             const floorY = canvas.height - this.height - 10;
             if (this.y > floorY) {
                 this.y = floorY;
-                this.velocityY = 0;
+                this.velocityY = -this.velocityY * 0.3; // Bounce
+                this.velocityX *= 0.7; // Slow down on bounce
+                
+                // Stop completely if bounce is too small
+                if (Math.abs(this.velocityY) < 0.5) {
+                    this.velocityY = 0;
+                }
+                if (Math.abs(this.velocityX) < 0.2) {
+                    this.velocityX = 0;
+                }
             }
         } else {
-            this.velocityY = 0;
+            // Track position for velocity calculation
+            this.lastX = this.x;
+            this.lastY = this.y;
         }
     }
 
@@ -348,6 +380,13 @@ canvas.addEventListener('mousemove', (e) => {
 
 canvas.addEventListener('mouseup', () => {
     if (draggedMagnet) {
+        // Berechne Wurf-Geschwindigkeit basierend auf letzter Bewegung
+        const velocityX = draggedMagnet.x - draggedMagnet.lastX;
+        const velocityY = draggedMagnet.y - draggedMagnet.lastY;
+        
+        draggedMagnet.velocityX = velocityX * 1.2; // Amplify throw
+        draggedMagnet.velocityY = velocityY * 1.2;
+        
         // Prüfe ob Magnet auf dem Kühlschrank ist
         const onFridge = draggedMagnet.x + draggedMagnet.width > fridge.x &&
                          draggedMagnet.x < fridge.x + fridge.width &&
@@ -700,7 +739,7 @@ function calculateEdgePrecision(drawnPoints, shape) {
     // Berechne durchschnittlichen Abstand zur idealen Kante
     let totalDistance = 0;
     let pointsNearEdge = 0;
-    const tolerance = 8; // Sehr enge Toleranz - nur 8px gelten als "auf der Kante"
+    const tolerance = 5; // Extrem enge Toleranz - nur 5px gelten als "auf der Kante"
     
     for (let drawnPoint of drawnPoints) {
         let minDist = Infinity;
@@ -720,11 +759,34 @@ function calculateEdgePrecision(drawnPoints, shape) {
     const avgDistance = totalDistance / drawnPoints.length;
     
     // Sehr strenge Bewertung: max 100% bei 0px Abstand, fällt extrem schnell ab
-    let precision = Math.max(0, 100 - (avgDistance * 5));
+    let precision = Math.max(0, 100 - (avgDistance * 8));
+    
+    // Check für Linienglätte (bestraft eckige/zittrige Linien)
+    let smoothnessScore = 100;
+    if (drawnPoints.length > 3) {
+        let totalAngleChange = 0;
+        for (let i = 1; i < drawnPoints.length - 1; i++) {
+            const dx1 = drawnPoints[i].x - drawnPoints[i-1].x;
+            const dy1 = drawnPoints[i].y - drawnPoints[i-1].y;
+            const dx2 = drawnPoints[i+1].x - drawnPoints[i].x;
+            const dy2 = drawnPoints[i+1].y - drawnPoints[i].y;
+            
+            const angle1 = Math.atan2(dy1, dx1);
+            const angle2 = Math.atan2(dy2, dx2);
+            let angleDiff = Math.abs(angle2 - angle1);
+            if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+            
+            totalAngleChange += angleDiff;
+        }
+        const avgAngleChange = totalAngleChange / (drawnPoints.length - 2);
+        smoothnessScore = Math.max(0, 100 - (avgAngleChange * 200)); // Bestraft Richtungswechsel
+    }
     
     // Strafe: Wie viel % der Punkte waren NICHT auf der Kante?
     const edgeCoverage = (pointsNearEdge / drawnPoints.length) * 100;
-    precision = (precision * 0.3) + (edgeCoverage * 0.7); // Edge coverage zählt mehr
+    
+    // Kombiniere alle Faktoren (alle müssen gut sein)
+    precision = (precision * 0.2) + (edgeCoverage * 0.5) + (smoothnessScore * 0.3);
     
     // Sehr strenger Bonus für geschlossene Form
     if (drawnPoints.length > 5) {
@@ -735,10 +797,10 @@ function calculateEdgePrecision(drawnPoints, shape) {
             Math.pow(firstPoint.y - lastPoint.y, 2)
         );
         
-        if (closureDistance < 15) {
-            precision += 8;
-        } else if (closureDistance > 40) {
-            precision -= 15; // Strafe für offene Form
+        if (closureDistance < 10) {
+            precision += 5;
+        } else if (closureDistance > 30) {
+            precision -= 25; // Harte Strafe für offene Form
         }
     }
     
