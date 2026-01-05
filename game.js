@@ -119,6 +119,25 @@ class Magnet {
         this.dragging = false;
         this.series = series;
         this.id = Date.now() + Math.random();
+        this.velocityY = 0;
+        this.gravity = 0.5;
+    }
+    
+    update() {
+        // Apply gravity wenn nicht dragging
+        if (!this.dragging) {
+            this.velocityY += this.gravity;
+            this.y += this.velocityY;
+            
+            // Stoppe am Boden (canvas height - magnet height)
+            const floorY = canvas.height - this.height - 10;
+            if (this.y > floorY) {
+                this.y = floorY;
+                this.velocityY = 0;
+            }
+        } else {
+            this.velocityY = 0;
+        }
     }
 
     draw() {
@@ -174,11 +193,17 @@ function draw() {
     ctx.fillStyle = PIXEL_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Magnets
-    gameState.magnets.forEach(magnet => magnet.draw());
+    // Magnets - Update gravity und zeichnen
+    gameState.magnets.forEach(magnet => {
+        magnet.update();
+        magnet.draw();
+    });
 
     // Fridge oben halten
     drawFridge();
+    
+    // Weiterzeichnen
+    requestAnimationFrame(draw);
 }
 
 function render() {
@@ -617,19 +642,19 @@ function initCuttingGame() {
         const precision = calculateEdgePrecision(drawnPoints, selectedShape);
         cuttingState.precision = precision;
         
-        // Determine rarity (strenger bewerten)
-        if (precision >= 85) {
+        // Determine rarity (stricter thresholds)
+        if (precision >= 95) {
             cuttingState.rarity = 'legendary';
-            cuttingState.value = Math.floor(1000 + precision * 20);
-        } else if (precision >= 70) {
+            cuttingState.value = Math.floor(1500 + precision * 30);
+        } else if (precision >= 80) {
             cuttingState.rarity = 'epic';
-            cuttingState.value = Math.floor(400 + precision * 8);
-        } else if (precision >= 50) {
+            cuttingState.value = Math.floor(500 + precision * 10);
+        } else if (precision >= 60) {
             cuttingState.rarity = 'rare';
-            cuttingState.value = Math.floor(150 + precision * 3);
+            cuttingState.value = Math.floor(200 + precision * 3);
         } else {
             cuttingState.rarity = 'common';
-            cuttingState.value = Math.floor(20 + precision);
+            cuttingState.value = Math.floor(30 + precision * 0.5);
         }
         
         // Update display
