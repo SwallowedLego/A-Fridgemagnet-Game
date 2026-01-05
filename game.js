@@ -643,19 +643,19 @@ function initCuttingGame() {
         const precision = calculateEdgePrecision(drawnPoints, selectedShape);
         cuttingState.precision = precision;
         
-        // Determine rarity (stricter thresholds)
-        if (precision >= 95) {
+        // Determine rarity (extremely strict thresholds)
+        if (precision >= 98) {
             cuttingState.rarity = 'legendary';
-            cuttingState.value = Math.floor(1500 + precision * 30);
-        } else if (precision >= 80) {
+            cuttingState.value = Math.floor(2000 + precision * 50);
+        } else if (precision >= 90) {
             cuttingState.rarity = 'epic';
-            cuttingState.value = Math.floor(500 + precision * 10);
-        } else if (precision >= 60) {
+            cuttingState.value = Math.floor(700 + precision * 15);
+        } else if (precision >= 75) {
             cuttingState.rarity = 'rare';
-            cuttingState.value = Math.floor(200 + precision * 3);
+            cuttingState.value = Math.floor(250 + precision * 4);
         } else {
             cuttingState.rarity = 'common';
-            cuttingState.value = Math.floor(30 + precision * 0.5);
+            cuttingState.value = Math.floor(20 + precision * 0.3);
         }
         
         // Update display
@@ -700,7 +700,7 @@ function calculateEdgePrecision(drawnPoints, shape) {
     // Berechne durchschnittlichen Abstand zur idealen Kante
     let totalDistance = 0;
     let pointsNearEdge = 0;
-    const tolerance = 15; // Punkte innerhalb von 15px gelten als "auf der Kante"
+    const tolerance = 8; // Sehr enge Toleranz - nur 8px gelten als "auf der Kante"
     
     for (let drawnPoint of drawnPoints) {
         let minDist = Infinity;
@@ -719,14 +719,14 @@ function calculateEdgePrecision(drawnPoints, shape) {
     
     const avgDistance = totalDistance / drawnPoints.length;
     
-    // Strenge Bewertung: max 100% bei 0px Abstand, fällt schnell ab
-    let precision = Math.max(0, 100 - (avgDistance * 2));
+    // Sehr strenge Bewertung: max 100% bei 0px Abstand, fällt extrem schnell ab
+    let precision = Math.max(0, 100 - (avgDistance * 5));
     
-    // Bonus: Wie viel % der Punkte waren auf der Kante?
+    // Strafe: Wie viel % der Punkte waren NICHT auf der Kante?
     const edgeCoverage = (pointsNearEdge / drawnPoints.length) * 100;
-    precision = (precision + edgeCoverage) / 2;
+    precision = (precision * 0.3) + (edgeCoverage * 0.7); // Edge coverage zählt mehr
     
-    // Bonus für geschlossene Form
+    // Sehr strenger Bonus für geschlossene Form
     if (drawnPoints.length > 5) {
         const firstPoint = drawnPoints[0];
         const lastPoint = drawnPoints[drawnPoints.length - 1];
@@ -735,8 +735,10 @@ function calculateEdgePrecision(drawnPoints, shape) {
             Math.pow(firstPoint.y - lastPoint.y, 2)
         );
         
-        if (closureDistance < 30) {
-            precision += 15;
+        if (closureDistance < 15) {
+            precision += 8;
+        } else if (closureDistance > 40) {
+            precision -= 15; // Strafe für offene Form
         }
     }
     
