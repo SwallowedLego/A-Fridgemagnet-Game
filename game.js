@@ -12,6 +12,9 @@ const PIXEL_BG = 'rgb(215, 228, 222)';
 const PIXEL_PANEL = 'rgb(188, 204, 197)';
 const PIXEL_BORDER = 'rgb(44, 62, 60)';
 
+// Cache für Kühlschrank-Bilder, damit der Sprite beim Drag nicht flackert
+const fridgeImageCache = {};
+
 // Sound für Magnete
 function playMagnetSound() {
     const audio = new Audio('audimomass-output.mp3');
@@ -23,7 +26,7 @@ function playMagnetSound() {
 
 // ========== SPIEL-STATE ==========
 let gameState = {
-    money: 1000,
+    money: 0,
     fridgeSkin: 'green1',
     magnets: [],
     inventory: {}, // { seriesName: [{ id, imageData, value }] }
@@ -78,6 +81,25 @@ const fridges = {
     }
 };
 
+function getFridgeImage(skinId) {
+    if (!fridges[skinId]) return null;
+    if (fridgeImageCache[skinId]) return fridgeImageCache[skinId];
+
+    const img = new Image();
+    img.src = fridges[skinId].closed;
+    fridgeImageCache[skinId] = { img, loaded: false, error: false };
+
+    img.onload = () => {
+        fridgeImageCache[skinId].loaded = true;
+        draw(); // erneut zeichnen, sobald das Bild fertig ist
+    };
+    img.onerror = () => {
+        fridgeImageCache[skinId].error = true;
+    };
+
+    return fridgeImageCache[skinId];
+}
+
 const fridge = {
     x: 325,
     y: 75,
@@ -123,38 +145,24 @@ class Magnet {
 // ========== DRAW FRIDGE WITH SPRITES ==========
 function drawFridge() {
     const fridgeConfig = fridges[gameState.fridgeSkin];
-    
+
     if (!fridgeConfig) {
         console.error('Fridge skin not found:', gameState.fridgeSkin);
         return;
     }
-    
-    // Load and draw sprite image in pixel-art style
-    const img = new Image();
-    img.src = fridgeConfig.closed;
-    
-    img.onload = () => {
-        // Pixel-Art rendering: No smoothing
-        ctx.imageSmoothingEnabled = false;
-        ctx.webkitImageSmoothingEnabled = false;
-        ctx.msImageSmoothingEnabled = false;
-        ctx.mozImageSmoothingEnabled = false;
-        
-        // Scale image to fridge size
-        ctx.drawImage(img, fridge.x, fridge.y, fridge.width, fridge.height);
-        
-        // Pixel-Art effect: Re-enable smoothing for other elements
-        ctx.imageSmoothingEnabled = true;
-    };
-    
-    img.onerror = () => {
-        // Fallback: Draw simple graphics
+
+    const cached = getFridgeImage(gameState.fridgeSkin);
+
+    if (cached && cached.loaded && !cached.error) {
+        ctx.drawImage(cached.img, fridge.x, fridge.y, fridge.width, fridge.height);
+    } else {
+        // Fallback: Draw simple graphics while the image lädt oder fehlschlägt
         ctx.fillStyle = gameState.fridgeSkin.includes('white') ? '#e8e8e8' : '#a8c8d8';
         ctx.fillRect(fridge.x, fridge.y, fridge.width, fridge.height);
         ctx.strokeStyle = '#666';
         ctx.lineWidth = 3;
         ctx.strokeRect(fridge.x, fridge.y, fridge.width, fridge.height);
-    };
+    }
 }
 
 // ========== DRAW GAME ==========
@@ -164,12 +172,12 @@ function draw() {
     // Background
     ctx.fillStyle = PIXEL_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Fridge
-    drawFridge();
-    
+
     // Magnets
     gameState.magnets.forEach(magnet => magnet.draw());
+
+    // Fridge oben halten
+    drawFridge();
 }
 
 // ========== MAGNET KAUFEN/VERKAUFEN ==========
