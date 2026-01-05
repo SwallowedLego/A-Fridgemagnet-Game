@@ -102,10 +102,10 @@ function getFridgeImage(skinId) {
 }
 
 const fridge = {
-    x: 325,
-    y: 75,
-    width: 350,
-    height: 450
+    x: 300,  // centered: (1000 - 400) / 2
+    y: 20,   // reduced top margin for bigger fridge
+    width: 400,
+    height: 510
 };
 
 // ========== MAGNET KLASSE ==========
@@ -323,10 +323,19 @@ canvas.addEventListener('mousemove', (e) => {
 
 canvas.addEventListener('mouseup', () => {
     if (draggedMagnet) {
+        // Prüfe ob Magnet auf dem Kühlschrank ist
+        const onFridge = draggedMagnet.x + draggedMagnet.width > fridge.x &&
+                         draggedMagnet.x < fridge.x + fridge.width &&
+                         draggedMagnet.y + draggedMagnet.height > fridge.y &&
+                         draggedMagnet.y < fridge.y + fridge.height;
+        
         draggedMagnet.dragging = false;
         draggedMagnet = null;
-        // Sound mit variabler Tonhöhe abspielen
-        playMagnetSound();
+        
+        // Sound nur wenn auf Kühlschrank
+        if (onFridge) {
+            playMagnetSound();
+        }
     }
 });
 
