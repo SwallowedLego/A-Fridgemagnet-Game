@@ -187,6 +187,19 @@ button:focus {
     outline-offset: -4px;
 }
 
+.version-badge {
+    position: fixed;
+    right: 10px;
+    bottom: 8px;
+    background: var(--pixel-panel);
+    color: var(--pixel-text);
+    border: 2px solid var(--pixel-border);
+    padding: 4px 8px;
+    font-size: 10px;
+    box-shadow: 2px 2px 0 var(--pixel-shadow);
+    z-index: 1100;
+}
+
 /* Grid Layouts */
 .market-grid, .inventory-grid, .skins-grid {
     display: grid;
