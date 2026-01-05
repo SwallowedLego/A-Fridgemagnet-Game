@@ -193,14 +193,14 @@ function draw() {
     ctx.fillStyle = PIXEL_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Magnets - Update gravity und zeichnen
+    // Fridge first (background)
+    drawFridge();
+
+    // Magnets - Update gravity und zeichnen (on top)
     gameState.magnets.forEach(magnet => {
         magnet.update();
         magnet.draw();
     });
-
-    // Fridge oben halten
-    drawFridge();
     
     // Weiterzeichnen
     requestAnimationFrame(draw);
@@ -432,6 +432,7 @@ function selectShape(shape) {
     });
     document.querySelector(`[data-shape="${shape}"]`).classList.add('active');
     updateCuttingPreview();
+    initCuttingGame(); // Redraw trace game with new shape
 }
 
 function updateCuttingPreview() {
