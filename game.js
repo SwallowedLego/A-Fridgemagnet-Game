@@ -125,11 +125,19 @@ class Magnet {
         this.friction = 0.98;
         this.lastX = x;
         this.lastY = y;
+        this.stuckToFridge = false;
+    }
+    
+    isOnFridge() {
+        return this.x + this.width > fridge.x &&
+               this.x < fridge.x + fridge.width &&
+               this.y + this.height > fridge.y &&
+               this.y < fridge.y + fridge.height;
     }
     
     update() {
-        // Apply physics wenn nicht dragging
-        if (!this.dragging) {
+        // Apply physics nur wenn nicht dragging und nicht am Kühlschrank
+        if (!this.dragging && !this.stuckToFridge) {
             // Gravity
             this.velocityY += this.gravity;
             
@@ -165,10 +173,6 @@ class Magnet {
                     this.velocityX = 0;
                 }
             }
-        } else {
-            // Track position for velocity calculation
-            this.lastX = this.x;
-            this.lastY = this.y;
         }
     }
 
@@ -351,26 +355,41 @@ function selectFridgeSkin(skinId) {
 }
 
 // ========== CANVAS EVENTS ==========
+let lastMouseX = 0;
+let lastMouseY = 0;
+let mouseVelocityX = 0;
+let mouseVelocityY = 0;
+
 canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+    
     for (let i = gameState.magnets.length - 1; i >= 0; i--) {
         if (gameState.magnets[i].contains(mouseX, mouseY)) {
             draggedMagnet = gameState.magnets[i];
             draggedMagnet.dragging = true;
+            draggedMagnet.stuckToFridge = false; // Remove from fridge when grabbed
             break;
         }
     }
 });
 
 canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate mouse velocity
+    mouseVelocityX = mouseX - lastMouseX;
+    mouseVelocityY = mouseY - lastMouseY;
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+    
     if (draggedMagnet && draggedMagnet.dragging) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
         draggedMagnet.x = mouseX - draggedMagnet.width / 2;
         draggedMagnet.y = mouseY - draggedMagnet.height / 2;
         
@@ -380,26 +399,24 @@ canvas.addEventListener('mousemove', (e) => {
 
 canvas.addEventListener('mouseup', () => {
     if (draggedMagnet) {
-        // Berechne Wurf-Geschwindigkeit basierend auf letzter Bewegung
-        const velocityX = draggedMagnet.x - draggedMagnet.lastX;
-        const velocityY = draggedMagnet.y - draggedMagnet.lastY;
-        
-        draggedMagnet.velocityX = velocityX * 1.2; // Amplify throw
-        draggedMagnet.velocityY = velocityY * 1.2;
+        // Berechne Wurf-Geschwindigkeit basierend auf Maus-Velocity
+        draggedMagnet.velocityX = mouseVelocityX * 1.5; // Amplify throw
+        draggedMagnet.velocityY = mouseVelocityY * 1.5;
         
         // Prüfe ob Magnet auf dem Kühlschrank ist
-        const onFridge = draggedMagnet.x + draggedMagnet.width > fridge.x &&
-                         draggedMagnet.x < fridge.x + fridge.width &&
-                         draggedMagnet.y + draggedMagnet.height > fridge.y &&
-                         draggedMagnet.y < fridge.y + fridge.height;
+        const onFridge = draggedMagnet.isOnFridge();
         
         draggedMagnet.dragging = false;
-        draggedMagnet = null;
         
-        // Sound nur wenn auf Kühlschrank
+        // Wenn auf Kühlschrank, klebe ihn fest
         if (onFridge) {
+            draggedMagnet.stuckToFridge = true;
+            draggedMagnet.velocityX = 0;
+            draggedMagnet.velocityY = 0;
             playMagnetSound();
         }
+        
+        draggedMagnet = null;
     }
 });
 
