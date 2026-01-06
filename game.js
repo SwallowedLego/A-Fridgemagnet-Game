@@ -3,6 +3,23 @@ let ctx;
 
 // Wird in DOMContentLoaded initialisiert
 
+function initCanvas() {
+    if (canvas && ctx) return; // Bereits initialisiert
+    canvas = document.getElementById('gameCanvas');
+    if (!canvas) {
+        console.error('gameCanvas nicht gefunden');
+        return false;
+    }
+    ctx = canvas.getContext('2d');
+    
+    // Pixel-Art Rendering aktivieren
+    ctx.imageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    return true;
+}
+
 // Pixel-Palette
 const PIXEL_BG = 'rgb(215, 228, 222)';
 const PIXEL_PANEL = 'rgb(188, 204, 197)';
@@ -981,14 +998,7 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 // ========== TAB NAVIGATION ==========
 document.addEventListener('DOMContentLoaded', () => {
     // Canvas initialisieren
-    canvas = document.getElementById('gameCanvas');
-    ctx = canvas.getContext('2d');
-    
-    // Pixel-Art Rendering aktivieren
-    ctx.imageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.msImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
+    initCanvas();
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1026,15 +1036,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Falls DOMContentLoaded schon vorbei ist, führe direkt aus
-if (document.readyState === 'loading') {
-    // Noch nicht geladen, warte auf DOMContentLoaded oben
-} else {
+if (document.readyState !== 'loading') {
     // Bereits geladen
     setTimeout(() => {
-        if (!gameState.magnets) return; // Sicherheit
+        initCanvas();
         updateUI();
         requestAnimationFrame(draw);
-    }, 50);
+    }, 10);
 }
 
 // Settings-Modal API
