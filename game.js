@@ -126,6 +126,11 @@ class Magnet {
         this.lastX = x;
         this.lastY = y;
         this.stuckToFridge = false;
+        // Sanfte Magnet-Physik Parameter
+        this.magnetRange = 100;      // Reichweite, ab der Anziehung einsetzt (px)
+        this.magnetStrength = 0.12;  // Federkonstante
+        this.magnetDamping = 0.12;   // Dämpfung für die Federbewegung
+        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
     }
     
     isOnFridge() {
@@ -136,19 +141,39 @@ class Magnet {
     }
     
     update() {
-        // Apply physics nur wenn nicht dragging und nicht am Kühlschrank
-        if (!this.dragging && !this.stuckToFridge) {
-            // Gravity
+        // Apply physics nur wenn nicht dragging
+        if (!this.dragging) {
+            // Wenn fest, nichts bewegen
+            if (this.stuckToFridge) return;
+
+            // Schwerkraft immer leicht wirken lassen
             this.velocityY += this.gravity;
-            
-            // Apply friction
+
+            // Sanfte Magnet-Anziehung in der Nähe des Kühlschranks
+            const cx = this.x + this.width / 2;
+            const cy = this.y + this.height / 2;
+            const targetX = Math.max(fridge.x, Math.min(cx, fridge.x + fridge.width));
+            const targetY = Math.max(fridge.y, Math.min(cy, fridge.y + fridge.height));
+            const dx = targetX - cx;
+            const dy = targetY - cy;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < this.magnetRange) {
+                // Federkraft Richtung nächster Punkt am Kühlschrank
+                const ax = dx * this.magnetStrength - this.velocityX * this.magnetDamping;
+                const ay = dy * this.magnetStrength - this.velocityY * this.magnetDamping;
+                this.velocityX += ax;
+                this.velocityY += ay;
+            }
+
+            // Reibung anwenden
             this.velocityX *= this.friction;
-            
-            // Update position
+
+            // Position aktualisieren
             this.x += this.velocityX;
             this.y += this.velocityY;
-            
-            // Bounce off walls
+
+            // Wände abprallen
             if (this.x < 0) {
                 this.x = 0;
                 this.velocityX = -this.velocityX * 0.5;
@@ -157,21 +182,31 @@ class Magnet {
                 this.x = canvas.width - this.width;
                 this.velocityX = -this.velocityX * 0.5;
             }
-            
-            // Stoppe am Boden (canvas height - magnet height)
+
+            // Boden (canvas height - magnet height)
             const floorY = canvas.height - this.height - 10;
             if (this.y > floorY) {
                 this.y = floorY;
-                this.velocityY = -this.velocityY * 0.3; // Bounce
-                this.velocityX *= 0.7; // Slow down on bounce
-                
-                // Stop completely if bounce is too small
-                if (Math.abs(this.velocityY) < 0.5) {
-                    this.velocityY = 0;
+                this.velocityY = -this.velocityY * 0.3;
+                this.velocityX *= 0.7;
+                if (Math.abs(this.velocityY) < 0.5) this.velocityY = 0;
+                if (Math.abs(this.velocityX) < 0.2) this.velocityX = 0;
+            }
+
+            // Wenn wir im Kühlschrank-Bereich sind und fast still stehen, „haften“
+            const onFridge = this.isOnFridge();
+            const speed = Math.hypot(this.velocityX, this.velocityY);
+            if (onFridge && dist < 4 && speed < 0.35) {
+                this.stuckToFridge = true;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                if (!this.hasPlayedStickSound) {
+                    playMagnetSound();
+                    this.hasPlayedStickSound = true;
                 }
-                if (Math.abs(this.velocityX) < 0.2) {
-                    this.velocityX = 0;
-                }
+            } else if (!onFridge) {
+                // Außerhalb des Kühlschranks: Sound wieder erlauben
+                this.hasPlayedStickSound = false;
             }
         }
     }
@@ -402,20 +437,9 @@ canvas.addEventListener('mouseup', () => {
         // Berechne Wurf-Geschwindigkeit basierend auf Maus-Velocity
         draggedMagnet.velocityX = mouseVelocityX * 1.5; // Amplify throw
         draggedMagnet.velocityY = mouseVelocityY * 1.5;
-        
-        // Prüfe ob Magnet auf dem Kühlschrank ist
-        const onFridge = draggedMagnet.isOnFridge();
-        
+
         draggedMagnet.dragging = false;
-        
-        // Wenn auf Kühlschrank, klebe ihn fest
-        if (onFridge) {
-            draggedMagnet.stuckToFridge = true;
-            draggedMagnet.velocityX = 0;
-            draggedMagnet.velocityY = 0;
-            playMagnetSound();
-        }
-        
+        // Kein sofortiges Festkleben mehr – die Update-Physik übernimmt sanftes Haften
         draggedMagnet = null;
     }
 });
@@ -1013,3 +1037,4 @@ setTimeout(() => {
 // ========== INIT ==========
 updateUI();
 draw();
+
