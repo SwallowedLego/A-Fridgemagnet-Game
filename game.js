@@ -63,6 +63,13 @@ const fridges = {
     }
 };
 
+const fridge = {
+    x: 300,  // centered: (1000 - 400) / 2
+    y: 20,   // reduced top margin for bigger fridge
+    width: 400,
+    height: 510
+};
+
 function getFridgeImage(skinId) {
     if (!fridges[skinId]) return null;
     if (fridgeImageCache[skinId]) return fridgeImageCache[skinId];
