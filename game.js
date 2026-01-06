@@ -468,7 +468,9 @@ function initImageUploadListener() {
     }
 }
 
-// Alte Stelle: Wird jetzt in DOMContentLoaded aufgerufenfunction openImageModal() {
+// Alte Stelle: Wird jetzt in DOMContentLoaded aufgerufen
+
+function openImageModal() {
     document.getElementById('imageModal').style.display = 'flex';
     selectedShape = 'square';
     document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
