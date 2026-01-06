@@ -307,8 +307,8 @@ function updateInventory() {
                 <div class="magnet-rarity ${rarityClass}">${(magnet.rarity || 'common').toUpperCase()}</div>
                 <div style="font-size: 10px; color: #666;">Präzision: ${Math.round(magnet.precision || 0)}%</div>
                 <div class="magnet-value">${value}€</div>
-                <button class="card-button" onclick="sellMagnet('${magnet.id}', ${value}, '${series}')">
-                    Sell
+                <button class="card-button" onclick="openDeleteModal('${series}', '${magnet.id}')">
+                    Delete
                 </button>
             `;
             grid.appendChild(card);
@@ -952,8 +952,7 @@ function finalizeMagnet() {
         closeImageModal();
         updateUI();
         draw();
-        
-        alert(`Magnet Created!\nPrecision: ${Math.round(cuttingState.precision)}%\nValue: ${cuttingState.value}€ (${cuttingState.rarity.toUpperCase()})`);
+        // Browser-Alert entfernt; stilles Update
     };
 }
 
@@ -984,12 +983,14 @@ setTimeout(() => {
             if (tabName === 'game') {
                 draw();
             }
-            if (tabName === 'settings') {
-                updateSettingsUI();
-            }
         });
     });
-    // Settings Radio-Listener
+    // Settings Cog öffnen
+    const openBtn = document.getElementById('openSettings');
+    if (openBtn) {
+        openBtn.addEventListener('click', () => openSettingsModal());
+    }
+    // Settings Radio-Listener (im Modal)
     const radios = document.querySelectorAll('input[name="fridgeColor"]');
     radios.forEach(r => r.addEventListener('change', (e) => setFridgeColor(e.target.value)));
     // Persistierte Farbe laden
@@ -999,6 +1000,44 @@ setTimeout(() => {
     } catch (_) {}
     updateSettingsUI();
 }, 100);
+
+// Settings-Modal API
+function openSettingsModal() {
+    const m = document.getElementById('settingsModal');
+    if (m) {
+        m.style.display = 'flex';
+        updateSettingsUI();
+    }
+}
+function closeSettingsModal() {
+    const m = document.getElementById('settingsModal');
+    if (m) m.style.display = 'none';
+}
+
+// Delete-Confirm Modal API
+let pendingDelete = null; // { series, id }
+function openDeleteModal(series, id) {
+    pendingDelete = { series, id };
+    const m = document.getElementById('deleteConfirmModal');
+    if (m) m.style.display = 'flex';
+}
+function closeDeleteModal() {
+    pendingDelete = null;
+    const m = document.getElementById('deleteConfirmModal');
+    if (m) m.style.display = 'none';
+}
+function confirmDeleteMagnet() {
+    if (!pendingDelete) return;
+    const { series, id } = pendingDelete;
+    if (gameState.inventory[series]) {
+        gameState.inventory[series] = gameState.inventory[series].filter(m => String(m.id) !== String(id));
+        if (gameState.inventory[series].length === 0) {
+            delete gameState.inventory[series];
+        }
+    }
+    closeDeleteModal();
+    updateUI();
+}
 
 // ========== INIT ==========
 updateUI();

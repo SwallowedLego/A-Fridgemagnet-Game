@@ -13,10 +13,12 @@
             <div class="nav-items">
                 <button class="nav-btn active" data-tab="game">Game</button>
                 <button class="nav-btn" data-tab="inventory">My Inventory</button>
-                <button class="nav-btn" data-tab="settings">Settings</button>
             </div>
-            <div class="wallet">
-                Money: <span id="money">1000</span>€
+            <div class="wallet" style="display:flex; align-items:center; gap:12px;">
+                <div>Money: <span id="money">1000</span>€</div>
+                <button id="openSettings" title="Settings" style="background:none; border:none; padding:4px; cursor:pointer; display:flex; align-items:center;">
+                    <img src="settings-cog.png" alt="Settings" style="width:22px; height:22px; image-rendering: pixelated;">
+                </button>
             </div>
         </div>
 
@@ -50,20 +52,47 @@
             </div>
         </div>
 
-        <!-- Settings Tab -->
-        <div class="tab-content" id="settings-tab">
-            <div class="container">
-                <h1>Settings</h1>
-                <div class="settings-group" style="display:flex; gap: 16px; align-items: center;">
-                    <div style="font-weight: 600;">Fridge Color:</div>
-                    <label style="display:flex; align-items:center; gap:6px;">
-                        <input type="radio" name="fridgeColor" value="green" checked>
-                        Green
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px;">
-                        <input type="radio" name="fridgeColor" value="white">
-                        White
-                    </label>
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="modal-close" onclick="closeSettingsModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-section">
+                        <h3>Fridge Color</h3>
+                        <div class="settings-group" style="display:flex; gap: 16px; align-items: center;">
+                            <label style="display:flex; align-items:center; gap:6px;">
+                                <input type="radio" name="fridgeColor" value="green" checked>
+                                Green
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px;">
+                                <input type="radio" name="fridgeColor" value="white">
+                                White
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeSettingsModal()" class="btn-primary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirm Modal -->
+        <div id="deleteConfirmModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Confirm Deletion</h2>
+                    <button class="modal-close" onclick="closeDeleteModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this magnet? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeDeleteModal()" class="btn-secondary">Cancel</button>
+                    <button onclick="confirmDeleteMagnet()" class="btn-danger">Delete</button>
                 </div>
             </div>
         </div>
