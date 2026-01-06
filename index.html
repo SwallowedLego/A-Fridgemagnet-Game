@@ -13,7 +13,7 @@
             <div class="nav-items">
                 <button class="nav-btn active" data-tab="game">Game</button>
                 <button class="nav-btn" data-tab="inventory">My Inventory</button>
-                <button class="nav-btn" data-tab="skins">Fridges</button>
+                <button class="nav-btn" data-tab="settings">Settings</button>
             </div>
             <div class="wallet">
                 Money: <span id="money">1000</span>€
@@ -50,11 +50,21 @@
             </div>
         </div>
 
-        <!-- Skins Tab -->
-        <div class="tab-content" id="skins-tab">
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
             <div class="container">
-                <h1>Fridge Skins</h1>
-                <div class="skins-grid" id="skinsGrid"></div>
+                <h1>Settings</h1>
+                <div class="settings-group" style="display:flex; gap: 16px; align-items: center;">
+                    <div style="font-weight: 600;">Fridge Color:</div>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="radio" name="fridgeColor" value="green" checked>
+                        Green
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="radio" name="fridgeColor" value="white">
+                        White
+                    </label>
+                </div>
             </div>
         </div>
     </div>

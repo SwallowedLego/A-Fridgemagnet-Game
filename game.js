@@ -28,7 +28,7 @@ function playMagnetSound() {
 // ========== SPIEL-STATE ==========
 let gameState = {
     money: 0,
-    fridgeSkin: 'green1',
+    fridgeSkin: 'green', // default: immer grüner Kühlschrank
     magnets: [],
     inventory: {}, // { seriesName: [{ id, imageData, value }] }
     marketMagnets: [], // Verfügbare Magnete auf dem Markt
@@ -38,47 +38,15 @@ let gameState = {
 let fridgeOpen = false;
 let draggedMagnet = null;
 
-// Kühlschrank Eigenschaften
+// Kühlschrank Eigenschaften (vereinfacht: nur grün/weiß)
 const fridges = {
-    green1: {
+    green: {
         closed: 'Fridges - Green/Fridge 1_sprites/Fridge 1_000.png',
         empty: 'Fridges - Green/Fridge 1_sprites/Fridge 1_000.png'
     },
-    green2: {
-        closed: 'Fridges - Green/Fridge 2 _sprites/Fridge 2 _000.png',
-        empty: 'Fridges - Green/Fridge 2 _sprites/Fridge 2 _000.png'
-    },
-    green3: {
-        closed: 'Fridges - Green/Fridge 3_sprites/Fridge 3_000.png',
-        empty: 'Fridges - Green/Fridge 3_sprites/Fridge 3_000.png'
-    },
-    green4: {
-        closed: 'Fridges - Green/Fridge 4 _sprites/Fridge 4 _000.png',
-        empty: 'Fridges - Green/Fridge 4 _sprites/Fridge 4 _000.png'
-    },
-    green5: {
-        closed: 'Fridges - Green/Fridge 5_sprites/Fridge 5_000.png',
-        empty: 'Fridges - Green/Fridge 5_sprites/Fridge 5_000.png'
-    },
-    white1: {
+    white: {
         closed: 'Fridges - White/Fridge 1 _sprites/Fridge 1 _000.png',
         empty: 'Fridges - White/Fridge 1 _sprites/Fridge 1 _000.png'
-    },
-    white2: {
-        closed: 'Fridges - White/Fridge 2_sprites/Fridge 2_000.png',
-        empty: 'Fridges - White/Fridge 2_sprites/Fridge 2_000.png'
-    },
-    white3: {
-        closed: 'Fridges - White/Fridge 3_sprites/Fridge 3_000.png',
-        empty: 'Fridges - White/Fridge 3_sprites/Fridge 3_000.png'
-    },
-    white4: {
-        closed: 'Fridges - White/Fridge 4_sprites/Fridge 4_000.png',
-        empty: 'Fridges - White/Fridge 4_sprites/Fridge 4_000.png'
-    },
-    white5: {
-        closed: 'Fridges - White/Fridge 5_sprites/Fridge 5_000.png',
-        empty: 'Fridges - White/Fridge 5_sprites/Fridge 5_000.png'
     }
 };
 
@@ -131,6 +99,14 @@ class Magnet {
         this.magnetStrength = 0.12;  // Federkonstante
         this.magnetDamping = 0.12;   // Dämpfung für die Federbewegung
         this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
+        // Wurf-/Boden-Handling
+        this.onGround = false;       // Liegt auf dem Boden auf
+        this.attractionCooldown = 0; // Frames, für die Anziehung pausiert wird nach Wurf
+        // Sanfte Magnet-Physik Parameter
+        this.magnetRange = 100;      // Reichweite, ab der Anziehung einsetzt (px)
+        this.magnetStrength = 0.12;  // Federkonstante
+        this.magnetDamping = 0.12;   // Dämpfung für die Federbewegung
+        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
     }
     
     isOnFridge() {
@@ -146,8 +122,10 @@ class Magnet {
             // Wenn fest, nichts bewegen
             if (this.stuckToFridge) return;
 
-            // Schwerkraft immer leicht wirken lassen
-            this.velocityY += this.gravity;
+            // Schwerkraft nur, wenn nicht am Boden
+            if (!this.onGround) {
+                this.velocityY += this.gravity;
+            }
 
             // Sanfte Magnet-Anziehung in der Nähe des Kühlschranks
             const cx = this.x + this.width / 2;
@@ -158,7 +136,8 @@ class Magnet {
             const dy = targetY - cy;
             const dist = Math.hypot(dx, dy);
 
-            if (dist < this.magnetRange) {
+            // Anziehung nur, wenn Cooldown vorbei und nicht am Boden
+            if (dist < this.magnetRange && this.attractionCooldown <= 0 && !this.onGround) {
                 // Federkraft Richtung nächster Punkt am Kühlschrank
                 const ax = dx * this.magnetStrength - this.velocityX * this.magnetDamping;
                 const ay = dy * this.magnetStrength - this.velocityY * this.magnetDamping;
@@ -183,14 +162,18 @@ class Magnet {
                 this.velocityX = -this.velocityX * 0.5;
             }
 
-            // Boden (canvas height - magnet height)
+            // Boden (canvas height - magnet height): Kein Bounce, realistische Haftung
             const floorY = canvas.height - this.height - 10;
             if (this.y > floorY) {
                 this.y = floorY;
-                this.velocityY = -this.velocityY * 0.3;
-                this.velocityX *= 0.7;
-                if (Math.abs(this.velocityY) < 0.5) this.velocityY = 0;
-                if (Math.abs(this.velocityX) < 0.2) this.velocityX = 0;
+                // Vertikale Bewegung stoppen
+                if (this.velocityY > 0) this.velocityY = 0;
+                this.onGround = true;
+                // Kinetische Reibung auf dem Boden
+                this.velocityX *= 0.85;
+                if (Math.abs(this.velocityX) < 0.05) this.velocityX = 0;
+            } else {
+                this.onGround = false;
             }
 
             // Wenn wir im Kühlschrank-Bereich sind und fast still stehen, „haften“
@@ -208,6 +191,9 @@ class Magnet {
                 // Außerhalb des Kühlschranks: Sound wieder erlauben
                 this.hasPlayedStickSound = false;
             }
+
+            // Anziehungs-Cooldown herunterzählen
+            if (this.attractionCooldown > 0) this.attractionCooldown--;
         }
     }
 
@@ -277,17 +263,7 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
-function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 1) Kühlschrank zeichnen (Hintergrund)
-    drawFridge();
-
-    // 2) Magnete oben drauf
-    gameState.magnets.forEach(m => drawMagnet(m));
-
-    requestAnimationFrame(render);
-}
+// (alt) render() nicht mehr benötigt
 
 // ========== MAGNET KAUFEN/VERKAUFEN ==========
 function getMagnetValue(series) {
@@ -301,7 +277,7 @@ function getMagnetValue(series) {
 function updateUI() {
     document.getElementById('money').textContent = gameState.money;
     updateInventory();
-    updateSkins();
+    updateSettingsUI();
 }
 
 function updateInventory() {
@@ -340,53 +316,27 @@ function updateInventory() {
     });
 }
 
-function updateSkins() {
-    const grid = document.getElementById('skinsGrid');
-    grid.innerHTML = '';
-    
-    Object.entries(fridges).forEach(([skinId, skinConfig]) => {
-        const card = document.createElement('div');
-        card.className = 'skin-card';
-        const isActive = gameState.fridgeSkin === skinId;
-        
-        // Lade Preview-Bild
-        const img = new Image();
-        img.src = skinConfig.closed;
-        
-        const imgElement = document.createElement('img');
-        imgElement.src = skinConfig.closed;
-        imgElement.style.width = '100%';
-        imgElement.style.height = '100px';
-        imgElement.style.objectFit = 'cover';
-        imgElement.style.borderRadius = '0';
-        imgElement.style.marginBottom = '8px';
-        imgElement.style.border = '1px solid #999';
-        imgElement.style.imageRendering = 'pixelated';
-        imgElement.style.imageRendering = 'crisp-edges';
-        
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'magnet-series';
-        nameDiv.textContent = skinId.replace('green', 'Green ').replace('white', 'White ');
-        
-        const buttonDiv = document.createElement('button');
-        buttonDiv.className = 'card-button';
-        buttonDiv.onclick = () => selectFridgeSkin(skinId);
-        buttonDiv.textContent = isActive ? '✓ Active' : 'Select';
-        
-        card.appendChild(imgElement);
-        card.appendChild(nameDiv);
-        card.appendChild(buttonDiv);
-        
-        grid.appendChild(card);
-    });
+// Settings-UI steuern (Green/White)
+function updateSettingsUI() {
+    const greenRadio = document.querySelector('input[name="fridgeColor"][value="green"]');
+    const whiteRadio = document.querySelector('input[name="fridgeColor"][value="white"]');
+    if (greenRadio && whiteRadio) {
+        if (gameState.fridgeSkin === 'white') {
+            whiteRadio.checked = true;
+        } else {
+            greenRadio.checked = true;
+        }
+    }
 }
 
 // ========== TRANSAKTIONEN ==========
 
-function selectFridgeSkin(skinId) {
-    gameState.fridgeSkin = skinId;
+function setFridgeColor(color) {
+    if (!['green', 'white'].includes(color)) return;
+    gameState.fridgeSkin = color;
+    try { localStorage.setItem('fridgeColor', color); } catch (_) {}
     draw();
-    updateSkins();
+    updateSettingsUI();
 }
 
 // ========== CANVAS EVENTS ==========
@@ -408,6 +358,7 @@ canvas.addEventListener('mousedown', (e) => {
             draggedMagnet = gameState.magnets[i];
             draggedMagnet.dragging = true;
             draggedMagnet.stuckToFridge = false; // Remove from fridge when grabbed
+            draggedMagnet.hasPlayedStickSound = false; // Erlaubt späteren Stick-Sound erneut
             break;
         }
     }
@@ -439,6 +390,9 @@ canvas.addEventListener('mouseup', () => {
         draggedMagnet.velocityY = mouseVelocityY * 1.5;
 
         draggedMagnet.dragging = false;
+        // Kurzer Cooldown, damit die Wurfparabel sichtbar ist, bevor Magnetkraft greift
+        draggedMagnet.attractionCooldown = 18; // ~300ms bei 60 FPS
+        draggedMagnet.onGround = false; // Neustart Flugphase
         // Kein sofortiges Festkleben mehr – die Update-Physik übernimmt sanftes Haften
         draggedMagnet = null;
     }
@@ -1030,8 +984,20 @@ setTimeout(() => {
             if (tabName === 'game') {
                 draw();
             }
+            if (tabName === 'settings') {
+                updateSettingsUI();
+            }
         });
     });
+    // Settings Radio-Listener
+    const radios = document.querySelectorAll('input[name="fridgeColor"]');
+    radios.forEach(r => r.addEventListener('change', (e) => setFridgeColor(e.target.value)));
+    // Persistierte Farbe laden
+    try {
+        const saved = localStorage.getItem('fridgeColor');
+        if (saved) gameState.fridgeSkin = saved;
+    } catch (_) {}
+    updateSettingsUI();
 }, 100);
 
 // ========== INIT ==========
