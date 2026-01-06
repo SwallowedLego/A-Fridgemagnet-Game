@@ -101,14 +101,6 @@ class Magnet {
         this.throwScale = 0.75;       // Skaliert Maus-Wurfkraft runter
         this.maxThrowSpeed = 12;      // Max. Startgeschwindigkeit (px/frame)
     }
-        this.airDrag = 0.985;         // Luftwiderstand (für X und Y)
-        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
-        // Wurf-/Boden-Handling
-        this.onGround = false;        // Liegt auf dem Boden auf
-        this.attractionCooldown = 24; // Frames Pause nach Wurf, bevor Anziehung greift (~0.4s)
-        this.throwScale = 0.75;       // Skaliert Maus-Wurfkraft runter
-        this.maxThrowSpeed = 12;      // Max. Startgeschwindigkeit (px/frame)
-    }
     
     isOnFridge() {
         return this.x + this.width > fridge.x &&
