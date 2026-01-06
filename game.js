@@ -45,7 +45,8 @@ let gameState = {
     magnets: [],
     inventory: {}, // { seriesName: [{ id, imageData, value }] }
     marketMagnets: [], // Verfügbare Magnete auf dem Markt
-    ownershipCount: {} // { seriesName: count }
+    ownershipCount: {}, // { seriesName: count }
+    debugMode: false // Debug-Modus für Velocity-Anzeige
 };
 
 let fridgeOpen = false;
@@ -231,6 +232,19 @@ class Magnet {
                 ctx.font = '12px Arial';
                 ctx.fillText('Image', this.x + 20, this.y + 40);
             }
+            
+            // Debug-Modus: Velocity anzeigen
+            if (gameState.debugMode) {
+                const speed = Math.hypot(this.velocityX, this.velocityY);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(this.x - 2, this.y - 30, 100, 24);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 11px monospace';
+                ctx.fillText(`vx: ${this.velocityX.toFixed(2)}`, this.x + 2, this.y - 17);
+                ctx.fillText(`vy: ${this.velocityY.toFixed(2)}`, this.x + 2, this.y - 6);
+                ctx.fillStyle = '#ffff00';
+                ctx.fillText(`|v|: ${speed.toFixed(2)}`, this.x + 2, this.y - 28);
+            }
         }
     }
 
@@ -337,7 +351,7 @@ function updateInventory() {
     });
 }
 
-// Settings-UI steuern (Green/White)
+// Settings-UI steuern (Green/White + Debug Mode)
 function updateSettingsUI() {
     const greenRadio = document.querySelector('input[name="fridgeColor"][value="green"]');
     const whiteRadio = document.querySelector('input[name="fridgeColor"][value="white"]');
@@ -347,6 +361,12 @@ function updateSettingsUI() {
         } else {
             greenRadio.checked = true;
         }
+    }
+    
+    // Debug-Modus Checkbox aktualisieren
+    const debugCheckbox = document.getElementById('debugModeCheckbox');
+    if (debugCheckbox) {
+        debugCheckbox.checked = gameState.debugMode;
     }
 }
 
@@ -1047,10 +1067,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Settings Radio-Listener (im Modal)
     const radios = document.querySelectorAll('input[name="fridgeColor"]');
     radios.forEach(r => r.addEventListener('change', (e) => setFridgeColor(e.target.value)));
-    // Persistierte Farbe laden
+    
+    // Debug-Modus Checkbox Listener
+    const debugCheckbox = document.getElementById('debugModeCheckbox');
+    if (debugCheckbox) {
+        debugCheckbox.addEventListener('change', (e) => {
+            gameState.debugMode = e.target.checked;
+            try { localStorage.setItem('debugMode', e.target.checked); } catch (_) {}
+        });
+    }
+    
+    // Persistierte Farbe und Debug-Modus laden
     try {
         const saved = localStorage.getItem('fridgeColor');
         if (saved) gameState.fridgeSkin = saved;
+        const savedDebug = localStorage.getItem('debugMode');
+        if (savedDebug !== null) gameState.debugMode = savedDebug === 'true';
     } catch (_) {}
     updateSettingsUI();
     
