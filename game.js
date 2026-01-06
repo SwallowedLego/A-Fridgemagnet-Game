@@ -359,7 +359,10 @@ let lastMouseY = 0;
 let mouseVelocityX = 0;
 let mouseVelocityY = 0;
 
-canvas.addEventListener('mousedown', (e) => {
+function initEventListeners() {
+    if (!canvas) return; // Canvas muss initialisiert sein
+    
+    canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -423,12 +426,16 @@ canvas.addEventListener('mouseup', () => {
         // Kein sofortiges Festkleben mehr – die Update-Physik übernimmt sanftes Haften
         draggedMagnet = null;
     }
-});
+    });
 
 // ========== BUTTONS ==========
-document.getElementById('toggleDoor').addEventListener('click', () => {
-    document.getElementById('imageUpload').click();
-});
+    const toggleDoor = document.getElementById('toggleDoor');
+    if (toggleDoor) {
+        toggleDoor.addEventListener('click', () => {
+            document.getElementById('imageUpload').click();
+        });
+    }
+}
 
 // ========== IMAGE MODAL SYSTEM ==========
 let currentImageData = null;
@@ -444,19 +451,24 @@ let cuttingState = {
 let cuttingCanvas, cuttingGameCanvas;
 let isCutting = false;
 
-document.getElementById('imageUpload').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            currentImageData = event.target.result;
-            openImageModal();
-        };
-        reader.readAsDataURL(file);
+function initImageUploadListener() {
+    const imageUpload = document.getElementById('imageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentImageData = event.target.result;
+                    openImageModal();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
-});
+}
 
-function openImageModal() {
+// Alte Stelle: Wird jetzt in DOMContentLoaded aufgerufenfunction openImageModal() {
     document.getElementById('imageModal').style.display = 'flex';
     selectedShape = 'square';
     document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
@@ -999,6 +1011,9 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Canvas initialisieren
     initCanvas();
+    // Event-Listener initialisieren
+    initEventListeners();
+    initImageUploadListener();
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
