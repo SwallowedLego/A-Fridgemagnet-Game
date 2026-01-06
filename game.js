@@ -94,19 +94,18 @@ class Magnet {
         this.lastX = x;
         this.lastY = y;
         this.stuckToFridge = false;
-        // Sanfte Magnet-Physik Parameter
-        this.magnetRange = 100;      // Reichweite, ab der Anziehung einsetzt (px)
-        this.magnetStrength = 0.12;  // Federkonstante
-        this.magnetDamping = 0.12;   // Dämpfung für die Federbewegung
+        // Sanfte Magnet-Physik Parameter (träge, weniger "Zoomen")
+        this.magnetRange = 100;       // Reichweite, ab der Anziehung einsetzt (px)
+        this.magnetStrength = 0.05;   // Federkonstante (kleiner = sanfter)
+        this.magnetDamping = 0.22;    // Dämpfung (größer = weniger Überschwingen)
+        this.magnetAccelMax = 0.6;    // Maximale Beschleunigung durch Magnet pro Frame
+        this.airDrag = 0.985;         // Luftwiderstand (für X und Y)
         this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
         // Wurf-/Boden-Handling
-        this.onGround = false;       // Liegt auf dem Boden auf
-        this.attractionCooldown = 0; // Frames, für die Anziehung pausiert wird nach Wurf
-        // Sanfte Magnet-Physik Parameter
-        this.magnetRange = 100;      // Reichweite, ab der Anziehung einsetzt (px)
-        this.magnetStrength = 0.12;  // Federkonstante
-        this.magnetDamping = 0.12;   // Dämpfung für die Federbewegung
-        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
+        this.onGround = false;        // Liegt auf dem Boden auf
+        this.attractionCooldown = 24; // Frames Pause nach Wurf, bevor Anziehung greift (~0.4s)
+        this.throwScale = 0.75;       // Skaliert Maus-Wurfkraft runter
+        this.maxThrowSpeed = 12;      // Max. Startgeschwindigkeit (px/frame)
     }
     
     isOnFridge() {
@@ -138,14 +137,22 @@ class Magnet {
 
             // Anziehung nur, wenn Cooldown vorbei und nicht am Boden
             if (dist < this.magnetRange && this.attractionCooldown <= 0 && !this.onGround) {
-                // Federkraft Richtung nächster Punkt am Kühlschrank
-                const ax = dx * this.magnetStrength - this.velocityX * this.magnetDamping;
-                const ay = dy * this.magnetStrength - this.velocityY * this.magnetDamping;
+                // Federkraft Richtung nächster Punkt am Kühlschrank (mit Begrenzung)
+                let ax = dx * this.magnetStrength - this.velocityX * this.magnetDamping;
+                let ay = dy * this.magnetStrength - this.velocityY * this.magnetDamping;
+                const aMag = Math.hypot(ax, ay);
+                if (aMag > this.magnetAccelMax && aMag > 0) {
+                    const scale = this.magnetAccelMax / aMag;
+                    ax *= scale; ay *= scale;
+                }
                 this.velocityX += ax;
                 this.velocityY += ay;
             }
 
-            // Reibung anwenden
+            // Luftwiderstand anwenden (träges Verhalten)
+            this.velocityX *= this.airDrag;
+            this.velocityY *= this.airDrag;
+            // Reibung anwenden (wirkt v.a. auf X)
             this.velocityX *= this.friction;
 
             // Position aktualisieren
@@ -386,12 +393,19 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener('mouseup', () => {
     if (draggedMagnet) {
         // Berechne Wurf-Geschwindigkeit basierend auf Maus-Velocity
-        draggedMagnet.velocityX = mouseVelocityX * 1.5; // Amplify throw
-        draggedMagnet.velocityY = mouseVelocityY * 1.5;
+        let vx = mouseVelocityX * draggedMagnet.throwScale;
+        let vy = mouseVelocityY * draggedMagnet.throwScale;
+        const vMag = Math.hypot(vx, vy);
+        if (vMag > draggedMagnet.maxThrowSpeed) {
+            const s = draggedMagnet.maxThrowSpeed / vMag;
+            vx *= s; vy *= s;
+        }
+        draggedMagnet.velocityX = vx;
+        draggedMagnet.velocityY = vy;
 
         draggedMagnet.dragging = false;
         // Kurzer Cooldown, damit die Wurfparabel sichtbar ist, bevor Magnetkraft greift
-        draggedMagnet.attractionCooldown = 18; // ~300ms bei 60 FPS
+        draggedMagnet.attractionCooldown = 24; // ~400ms bei 60 FPS
         draggedMagnet.onGround = false; // Neustart Flugphase
         // Kein sofortiges Festkleben mehr – die Update-Physik übernimmt sanftes Haften
         draggedMagnet = null;
