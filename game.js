@@ -983,7 +983,7 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 });
 
 // ========== TAB NAVIGATION ==========
-setTimeout(() => {
+document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const tabName = e.target.getAttribute('data-tab');
@@ -1013,7 +1013,23 @@ setTimeout(() => {
         if (saved) gameState.fridgeSkin = saved;
     } catch (_) {}
     updateSettingsUI();
-}, 100);
+    
+    // Start init
+    updateUI();
+    requestAnimationFrame(draw);
+});
+
+// Falls DOMContentLoaded schon vorbei ist, führe direkt aus
+if (document.readyState === 'loading') {
+    // Noch nicht geladen, warte auf DOMContentLoaded oben
+} else {
+    // Bereits geladen
+    setTimeout(() => {
+        if (!gameState.magnets) return; // Sicherheit
+        updateUI();
+        requestAnimationFrame(draw);
+    }, 50);
+}
 
 // Settings-Modal API
 function openSettingsModal() {
@@ -1054,6 +1070,5 @@ function confirmDeleteMagnet() {
 }
 
 // ========== INIT ==========
-updateUI();
-draw();
+// Wird durch DOMContentLoaded oben aufgerufen
 
