@@ -1,11 +1,7 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+let canvas;
+let ctx;
 
-// Pixel-Art Rendering aktivieren
-ctx.imageSmoothingEnabled = false;
-ctx.webkitImageSmoothingEnabled = false;
-ctx.msImageSmoothingEnabled = false;
-ctx.mozImageSmoothingEnabled = false;
+// Wird in DOMContentLoaded initialisiert
 
 // Pixel-Palette
 const PIXEL_BG = 'rgb(215, 228, 222)';
@@ -984,6 +980,16 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 
 // ========== TAB NAVIGATION ==========
 document.addEventListener('DOMContentLoaded', () => {
+    // Canvas initialisieren
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    
+    // Pixel-Art Rendering aktivieren
+    ctx.imageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const tabName = e.target.getAttribute('data-tab');
