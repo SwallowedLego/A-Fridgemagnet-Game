@@ -69,14 +69,6 @@ function getFridgeImage(skinId) {
     return fridgeImageCache[skinId];
 }
 
-const fridge = {
-    x: 300,  // centered: (1000 - 400) / 2
-    y: 20,   // reduced top margin for bigger fridge
-    width: 400,
-    height: 510
-};
-
-// ========== MAGNET KLASSE ==========
 class Magnet {
     constructor(imageData, x, y, series = 'Custom') {
         this.imageData = imageData;
@@ -94,11 +86,21 @@ class Magnet {
         this.lastX = x;
         this.lastY = y;
         this.stuckToFridge = false;
+
         // Sanfte Magnet-Physik Parameter (träge, weniger "Zoomen")
         this.magnetRange = 100;       // Reichweite, ab der Anziehung einsetzt (px)
         this.magnetStrength = 0.05;   // Federkonstante (kleiner = sanfter)
         this.magnetDamping = 0.22;    // Dämpfung (größer = weniger Überschwingen)
         this.magnetAccelMax = 0.6;    // Maximale Beschleunigung durch Magnet pro Frame
+        this.airDrag = 0.985;         // Luftwiderstand (für X und Y)
+        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
+
+        // Wurf-/Boden-Handling
+        this.onGround = false;        // Liegt auf dem Boden auf
+        this.attractionCooldown = 0;  // Wird beim Loslassen gesetzt
+        this.throwScale = 0.75;       // Skaliert Maus-Wurfkraft runter
+        this.maxThrowSpeed = 12;      // Max. Startgeschwindigkeit (px/frame)
+    }
         this.airDrag = 0.985;         // Luftwiderstand (für X und Y)
         this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
         // Wurf-/Boden-Handling
@@ -357,8 +359,11 @@ canvas.addEventListener('mousedown', (e) => {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
+    // Reset Wurfmessung beim Start des Drags
     lastMouseX = mouseX;
     lastMouseY = mouseY;
+    mouseVelocityX = 0;
+    mouseVelocityY = 0;
     
     for (let i = gameState.magnets.length - 1; i >= 0; i--) {
         if (gameState.magnets[i].contains(mouseX, mouseY)) {
@@ -376,17 +381,20 @@ canvas.addEventListener('mousemove', (e) => {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
-    // Calculate mouse velocity
-    mouseVelocityX = mouseX - lastMouseX;
-    mouseVelocityY = mouseY - lastMouseY;
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
-    
     if (draggedMagnet && draggedMagnet.dragging) {
+        // Wurfgeschwindigkeit nur während des Drags messen
+        mouseVelocityX = mouseX - lastMouseX;
+        mouseVelocityY = mouseY - lastMouseY;
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
         draggedMagnet.x = mouseX - draggedMagnet.width / 2;
         draggedMagnet.y = mouseY - draggedMagnet.height / 2;
         
         draw();
+    } else {
+        // Außerhalb eines Drags nur die letzte Position aktualisieren
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
     }
 });
 
