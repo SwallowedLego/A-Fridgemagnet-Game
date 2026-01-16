@@ -51,6 +51,11 @@ function initEngine() {
 }
 
 function createBoundaries() {
+    if (!canvas) {
+        console.error('Canvas noch nicht initialisiert!');
+        return;
+    }
+    
     // Boden
     const ground = Bodies.rectangle(canvas.width / 2, canvas.height - 5, canvas.width, 10, { isStatic: true });
     
@@ -393,6 +398,12 @@ function drawFridge() {
 
 // ========== DRAW GAME ==========
 function draw() {
+    if (!engine || !ctx || !canvas) {
+        console.log('Engine noch nicht initialisiert, skipping draw...');
+        requestAnimationFrame(draw);
+        return;
+    }
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Background
