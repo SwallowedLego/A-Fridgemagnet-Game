@@ -1,4 +1,4 @@
-// Matter.js Modules - wird nach dem Laden initialisiert
+// Matter.js Modules - werden direkt verwendet
 let Engine, World, Bodies, Body, Events, Constraint;
 
 let canvas;
@@ -27,6 +27,13 @@ function initCanvas() {
 
 // Matter.js Engine initialisieren
 function initEngine() {
+    // Prüfe ob Matter.js geladen ist
+    if (typeof Matter === 'undefined') {
+        console.error('Matter.js nicht geladen!');
+        setTimeout(() => initEngine(), 100);
+        return;
+    }
+    
     // Initialisiere Matter.js Module
     Engine = Matter.Engine;
     World = Matter.World;
