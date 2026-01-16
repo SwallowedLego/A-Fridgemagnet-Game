@@ -1,5 +1,15 @@
+// Matter.js Modules
+const Engine = Matter.Engine;
+const World = Matter.World;
+const Bodies = Matter.Bodies;
+const Body = Matter.Body;
+const Events = Matter.Events;
+const Constraint = Matter.Constraint;
+
 let canvas;
 let ctx;
+let engine;
+let world;
 
 // Wird in DOMContentLoaded initialisiert
 
@@ -18,6 +28,32 @@ function initCanvas() {
     ctx.msImageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     return true;
+}
+
+// Matter.js Engine initialisieren
+function initEngine() {
+    engine = Engine.create();
+    world = engine.world;
+    world.gravity.y = 1; // Schwerkraft nach unten
+    
+    // Erstelle Wände und Boden
+    createBoundaries();
+}
+
+function createBoundaries() {
+    // Boden
+    const ground = Bodies.rectangle(canvas.width / 2, canvas.height - 5, canvas.width, 10, { isStatic: true });
+    
+    // Linke Wand
+    const leftWall = Bodies.rectangle(0, canvas.height / 2, 10, canvas.height, { isStatic: true });
+    
+    // Rechte Wand
+    const rightWall = Bodies.rectangle(canvas.width, canvas.height / 2, 10, canvas.height, { isStatic: true });
+    
+    // Decke (optional)
+    const ceiling = Bodies.rectangle(canvas.width / 2, 0, canvas.width, 10, { isStatic: true });
+    
+    World.add(world, [ground, leftWall, rightWall, ceiling]);
 }
 
 // Pixel-Palette
@@ -51,6 +87,7 @@ let gameState = {
 
 let fridgeOpen = false;
 let draggedMagnet = null;
+let draggedConstraint = null; // Für Dragging mit Matter.js
 
 // Kühlschrank Eigenschaften (vereinfacht: nur grün/weiß)
 const fridges = {
@@ -81,7 +118,7 @@ function getFridgeImage(skinId) {
 
     img.onload = () => {
         fridgeImageCache[skinId].loaded = true;
-        draw(); // erneut zeichnen, sobald das Bild fertig ist
+        // No need to redraw, game loop handles it
     };
     img.onerror = () => {
         fridgeImageCache[skinId].error = true;
@@ -220,37 +257,39 @@ class Magnet {
     }
 
     draw() {
-        if (!fridgeOpen) {
-            try {
-                const img = new Image();
-                img.src = this.imageData;
-                ctx.drawImage(img, this.x, this.y, this.width, this.height);
-            } catch (e) {
-                ctx.fillStyle = '#ddd';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = '#666';
-                ctx.font = '12px Arial';
-                ctx.fillText('Image', this.x + 20, this.y + 40);
-            }
-            
-            // Debug-Modus: Velocity anzeigen
-            if (gameState.debugMode) {
-                const speed = Math.hypot(this.velocityX, this.velocityY);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.fillRect(this.x - 2, this.y - 30, 100, 24);
-                ctx.fillStyle = '#00ff00';
-                ctx.font = 'bold 11px monospace';
-                ctx.fillText(`vx: ${this.velocityX.toFixed(2)}`, this.x + 2, this.y - 17);
-                ctx.fillText(`vy: ${this.velocityY.toFixed(2)}`, this.x + 2, this.y - 6);
-                ctx.fillStyle = '#ffff00';
-                ctx.fillText(`|v|: ${speed.toFixed(2)}`, this.x + 2, this.y - 28);
-            }
+        try {
+            const img = new Image();
+            img.src = this.imageData;
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        } catch (e) {
+            ctx.fillStyle = '#ddd';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('Image', this.x + 20, this.y + 40);
+        }
+        
+        // Debug-Modus: Velocity anzeigen
+        if (gameState.debugMode) {
+            const speed = Matter.Vector.magnitude(this.body.velocity);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(this.x - 2, this.y - 30, 100, 24);
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 11px monospace';
+            ctx.fillText(`vx: ${this.body.velocity.x.toFixed(2)}`, this.x + 2, this.y - 17);
+            ctx.fillText(`vy: ${this.body.velocity.y.toFixed(2)}`, this.x + 2, this.y - 6);
+            ctx.fillStyle = '#ffff00';
+            ctx.fillText(`|v|: ${speed.toFixed(2)}`, this.x + 2, this.y - 28);
         }
     }
 
     contains(mouseX, mouseY) {
         return mouseX >= this.x && mouseX <= this.x + this.width &&
                mouseY >= this.y && mouseY <= this.y + this.height;
+    }
+    
+    remove() {
+        World.remove(world, this.body);
     }
 }
 
@@ -288,7 +327,10 @@ function draw() {
     // Fridge first (background)
     drawFridge();
 
-    // Magnets - Update gravity und zeichnen (on top)
+    // Update Matter.js engine
+    Engine.update(engine);
+    
+    // Update und draw magnets
     gameState.magnets.forEach(magnet => {
         magnet.update();
         magnet.draw();
@@ -383,76 +425,58 @@ function setFridgeColor(color) {
 // ========== CANVAS EVENTS ==========
 let lastMouseX = 0;
 let lastMouseY = 0;
-let mouseVelocityX = 0;
-let mouseVelocityY = 0;
 
 function initEventListeners() {
-    if (!canvas) return; // Canvas muss initialisiert sein
+    if (!canvas) return;
     
     canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    // Reset Wurfmessung beim Start des Drags
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
-    mouseVelocityX = 0;
-    mouseVelocityY = 0;
-    
-    for (let i = gameState.magnets.length - 1; i >= 0; i--) {
-        if (gameState.magnets[i].contains(mouseX, mouseY)) {
-            draggedMagnet = gameState.magnets[i];
-            draggedMagnet.dragging = true;
-            draggedMagnet.stuckToFridge = false; // Remove from fridge when grabbed
-            draggedMagnet.hasPlayedStickSound = false; // Erlaubt späteren Stick-Sound erneut
-            break;
-        }
-    }
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    if (draggedMagnet && draggedMagnet.dragging) {
-        // Wurfgeschwindigkeit nur während des Drags messen
-        mouseVelocityX = mouseX - lastMouseX;
-        mouseVelocityY = mouseY - lastMouseY;
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-        draggedMagnet.x = mouseX - draggedMagnet.width / 2;
-        draggedMagnet.y = mouseY - draggedMagnet.height / 2;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
         
-        draw();
-    } else {
-        // Außerhalb eines Drags nur die letzte Position aktualisieren
+        for (let i = gameState.magnets.length - 1; i >= 0; i--) {
+            if (gameState.magnets[i].contains(mouseX, mouseY)) {
+                draggedMagnet = gameState.magnets[i];
+                draggedMagnet.dragging = true;
+                draggedMagnet.stuckToFridge = false;
+                draggedMagnet.hasPlayedStickSound = false;
+                
+                // Erstelle Constraint für Dragging
+                draggedConstraint = Constraint.create({
+                    body: draggedMagnet.body,
+                    pointA: { x: mouseX, y: mouseY },
+                    length: 0,
+                    stiffness: 1
+                });
+                World.add(world, draggedConstraint);
+                
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+                break;
+            }
+        }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if (draggedMagnet && draggedConstraint) {
+            draggedConstraint.pointA = { x: mouseX, y: mouseY };
+        }
+        
         lastMouseX = mouseX;
         lastMouseY = mouseY;
-    }
-});
+    });
 
-canvas.addEventListener('mouseup', () => {
-    if (draggedMagnet) {
-        // Berechne Wurf-Geschwindigkeit basierend auf Maus-Velocity
-        let vx = mouseVelocityX * draggedMagnet.throwScale;
-        let vy = mouseVelocityY * draggedMagnet.throwScale;
-        const vMag = Math.hypot(vx, vy);
-        if (vMag > draggedMagnet.maxThrowSpeed) {
-            const s = draggedMagnet.maxThrowSpeed / vMag;
-            vx *= s; vy *= s;
+    canvas.addEventListener('mouseup', () => {
+        if (draggedMagnet && draggedConstraint) {
+            World.remove(world, draggedConstraint);
+            draggedConstraint = null;
+            draggedMagnet.dragging = false;
+            draggedMagnet = null;
         }
-        draggedMagnet.velocityX = vx;
-        draggedMagnet.velocityY = vy;
-
-        draggedMagnet.dragging = false;
-        // Kurzer Cooldown, damit die Wurfparabel sichtbar ist, bevor Magnetkraft greift
-        draggedMagnet.attractionCooldown = 24; // ~400ms bei 60 FPS
-        draggedMagnet.onGround = false; // Neustart Flugphase
-        // Kein sofortiges Festkleben mehr – die Update-Physik übernimmt sanftes Haften
-        draggedMagnet = null;
-    }
     });
 
 // ========== BUTTONS ==========
@@ -1040,6 +1064,10 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Canvas initialisieren
     initCanvas();
+    
+    // Matter.js Engine initialisieren
+    initEngine();
+    
     // Event-Listener initialisieren
     initEventListeners();
     initImageUploadListener();
@@ -1093,9 +1121,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Falls DOMContentLoaded schon vorbei ist, führe direkt aus
 if (document.readyState !== 'loading') {
-    // Bereits geladen
     setTimeout(() => {
         initCanvas();
+        initEngine();
         updateUI();
         requestAnimationFrame(draw);
     }, 10);
@@ -1130,6 +1158,15 @@ function confirmDeleteMagnet() {
     if (!pendingDelete) return;
     const { series, id } = pendingDelete;
     if (gameState.inventory[series]) {
+        const magnetToDelete = gameState.inventory[series].find(m => String(m.id) === String(id));
+        if (magnetToDelete) {
+            // Remove from world
+            const magnetInWorld = gameState.magnets.find(m => m.id === parseFloat(id));
+            if (magnetInWorld) {
+                magnetInWorld.remove();
+                gameState.magnets = gameState.magnets.filter(m => m.id !== parseFloat(id));
+            }
+        }
         gameState.inventory[series] = gameState.inventory[series].filter(m => String(m.id) !== String(id));
         if (gameState.inventory[series].length === 0) {
             delete gameState.inventory[series];
