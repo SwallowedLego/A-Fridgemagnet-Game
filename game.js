@@ -1140,13 +1140,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Canvas initialisieren
     initCanvas();
     
-    // Matter.js Engine initialisieren
-    initEngine();
+    // Warte auf Matter.js und initialisiere dann
+    function waitForMatter() {
+        if (typeof Matter !== 'undefined') {
+            initEngine();
+            initEventListeners();
+            initImageUploadListener();
+            setupNavigation();
+            loadGame();
+        } else {
+            console.log('Warte auf Matter.js...');
+            setTimeout(waitForMatter, 50);
+        }
+    }
     
-    // Event-Listener initialisieren
-    initEventListeners();
-    initImageUploadListener();
-    
+    waitForMatter();
+});
+
+function setupNavigation() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const tabName = e.target.getAttribute('data-tab');
@@ -1188,20 +1199,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedDebug !== null) gameState.debugMode = savedDebug === 'true';
     } catch (_) {}
     updateSettingsUI();
-    
+}
+
+function loadGame() {
     // Start init
     updateUI();
     requestAnimationFrame(draw);
-});
-
-// Falls DOMContentLoaded schon vorbei ist, führe direkt aus
-if (document.readyState !== 'loading') {
-    setTimeout(() => {
-        initCanvas();
-        initEngine();
-        updateUI();
-        requestAnimationFrame(draw);
-    }, 10);
 }
 
 // Settings-Modal API
