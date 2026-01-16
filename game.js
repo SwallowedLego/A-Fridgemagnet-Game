@@ -1153,7 +1153,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Warte auf Matter.js und initialisiere dann
     function waitForMatter() {
-        if (typeof Matter !== 'undefined') {
+        if (typeof Matter !== 'undefined' && window.matterLoaded) {
+            console.log('✓ Matter.js loaded, initializing game...');
             initEngine();
             initEventListeners();
             initImageUploadListener();
