@@ -1,10 +1,5 @@
-// Matter.js Modules
-const Engine = Matter.Engine;
-const World = Matter.World;
-const Bodies = Matter.Bodies;
-const Body = Matter.Body;
-const Events = Matter.Events;
-const Constraint = Matter.Constraint;
+// Matter.js Modules - wird nach dem Laden initialisiert
+let Engine, World, Bodies, Body, Events, Constraint;
 
 let canvas;
 let ctx;
@@ -32,6 +27,14 @@ function initCanvas() {
 
 // Matter.js Engine initialisieren
 function initEngine() {
+    // Initialisiere Matter.js Module
+    Engine = Matter.Engine;
+    World = Matter.World;
+    Bodies = Matter.Bodies;
+    Body = Matter.Body;
+    Events = Matter.Events;
+    Constraint = Matter.Constraint;
+    
     engine = Engine.create();
     world = engine.world;
     world.gravity.y = 1; // Schwerkraft nach unten
