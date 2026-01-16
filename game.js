@@ -140,34 +140,99 @@ function getFridgeImage(skinId) {
 class Magnet {
     constructor(imageData, x, y, series = 'Custom') {
         this.imageData = imageData;
-        this.x = x;
-        this.y = y;
         this.width = 80;
         this.height = 80;
         this.dragging = false;
         this.series = series;
         this.id = Date.now() + Math.random();
-        this.velocityY = 0;
-        this.velocityX = 0;
-        this.gravity = 0.6;
-        this.friction = 0.98;
-        this.lastX = x;
-        this.lastY = y;
         this.stuckToFridge = false;
+        this.hasPlayedStickSound = false;
 
-        // Sanfte Magnet-Physik Parameter (träge, weniger "Zoomen")
-        this.magnetRange = 100;       // Reichweite, ab der Anziehung einsetzt (px)
-        this.magnetStrength = 0.05;   // Federkonstante (kleiner = sanfter)
-        this.magnetDamping = 0.22;    // Dämpfung (größer = weniger Überschwingen)
-        this.magnetAccelMax = 0.6;    // Maximale Beschleunigung durch Magnet pro Frame
-        this.airDrag = 0.985;         // Luftwiderstand (für X und Y)
-        this.hasPlayedStickSound = false; // Sound nur einmal beim Festkleben
+        // Erstelle Matter.js Body
+        this.body = Bodies.rectangle(x, y, this.width, this.height, {
+            restitution: 0.3,
+            frictionAir: 0.02,
+            friction: 0.5
+        });
+        World.add(world, this.body);
+    }
 
-        // Wurf-/Boden-Handling
-        this.onGround = false;        // Liegt auf dem Boden auf
-        this.attractionCooldown = 0;  // Wird beim Loslassen gesetzt
-        this.throwScale = 0.75;       // Skaliert Maus-Wurfkraft runter
-        this.maxThrowSpeed = 12;      // Max. Startgeschwindigkeit (px/frame)
+    // Getter/Setter für x/y Position vom Matter.js Body
+    get x() {
+        return this.body.position.x - this.width / 2;
+    }
+
+    get y() {
+        return this.body.position.y - this.height / 2;
+    }
+
+    set x(value) {
+        Body.setPosition(this.body, { x: value + this.width / 2, y: this.body.position.y });
+    }
+
+    set y(value) {
+        Body.setPosition(this.body, { x: this.body.position.x, y: value + this.height / 2 });
+    }
+    
+    isOnFridge() {
+        return this.x + this.width > fridge.x &&
+               this.x < fridge.x + fridge.width &&
+               this.y + this.height > fridge.y &&
+               this.y < fridge.y + fridge.height;
+    }
+    
+    // Matter.js Physics Update - nur Sticking prüfen
+    checkStickToFridge() {
+        if (this.stuckToFridge) return; // Schon festgeklebt
+        
+        const onFridge = this.isOnFridge();
+        const speed = Matter.Vector.magnitude(this.body.velocity);
+        
+        if (onFridge && speed < 0.5) {
+            this.stuckToFridge = true;
+            Body.setVelocity(this.body, { x: 0, y: 0 });
+            Body.setAngularVelocity(this.body, 0);
+            if (!this.hasPlayedStickSound) {
+                playMagnetSound();
+                this.hasPlayedStickSound = true;
+            }
+        }
+    }
+
+    draw() {
+        try {
+            const img = new Image();
+            img.src = this.imageData;
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        } catch (e) {
+            ctx.fillStyle = '#ddd';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('Image', this.x + 20, this.y + 40);
+        }
+        
+        // Debug-Modus: Velocity anzeigen
+        if (gameState.debugMode) {
+            const speed = Matter.Vector.magnitude(this.body.velocity);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(this.x - 2, this.y - 30, 100, 24);
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 11px monospace';
+            ctx.fillText(`vx: ${this.body.velocity.x.toFixed(2)}`, this.x + 2, this.y - 17);
+            ctx.fillText(`vy: ${this.body.velocity.y.toFixed(2)}`, this.x + 2, this.y - 6);
+            ctx.fillStyle = '#ffff00';
+            ctx.fillText(`|v|: ${speed.toFixed(2)}`, this.x + 2, this.y - 28);
+        }
+    }
+
+    contains(mouseX, mouseY) {
+        return mouseX >= this.x && mouseX <= this.x + this.width &&
+               mouseY >= this.y && mouseY <= this.y + this.height;
+    }
+    
+    remove() {
+        World.remove(world, this.body);
     }
     
     isOnFridge() {
@@ -340,9 +405,9 @@ function draw() {
     // Update Matter.js engine
     Engine.update(engine);
     
-    // Update und draw magnets
+    // Check sticking und draw magnets
     gameState.magnets.forEach(magnet => {
-        magnet.update();
+        magnet.checkStickToFridge();
         magnet.draw();
     });
     
