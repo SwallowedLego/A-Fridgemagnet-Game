@@ -622,6 +622,7 @@ function initEventListeners() {
 
 // ========== IMAGE MODAL SYSTEM ==========
 let currentImageData = null;
+let currentImage = null; // Cached image instance
 let selectedShape = 'square';
 let cuttingState = {
     zoom: 1,
@@ -663,20 +664,31 @@ function openImageModal() {
     document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector('[data-shape="square"]').classList.add('active');
     
-    setTimeout(() => {
-        cuttingCanvas = document.getElementById('cuttingCanvas');
-        cuttingGameCanvas = document.getElementById('cuttingGameCanvas');
-        document.getElementById('imageZoom').value = 1;
-        document.getElementById('imageX').value = 0;
-        document.getElementById('imageY').value = 0;
-        updateCuttingPreview();
-        initCuttingGame();
-    }, 50);
+    // Preload image
+    currentImage = new Image();
+    currentImage.onload = () => {
+        setTimeout(() => {
+            cuttingCanvas = document.getElementById('cuttingCanvas');
+            cuttingGameCanvas = document.getElementById('cuttingGameCanvas');
+            document.getElementById('imageZoom').value = 1;
+            document.getElementById('imageX').value = 0;
+            document.getElementById('imageY').value = 0;
+            updateCuttingPreview();
+            initCuttingGame();
+        }, 50);
+    };
+    currentImage.onerror = () => {
+        console.error('Failed to load image');
+        alert('Failed to load image. Please try another file.');
+        closeImageModal();
+    };
+    currentImage.src = currentImageData;
 }
 
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
     currentImageData = null;
+    currentImage = null;
     cuttingState = {
         zoom: 1,
         offsetX: 0,
@@ -715,11 +727,9 @@ function updateCuttingPreview() {
     drawShape(ctx, 200, 200, 120, selectedShape, '#ddd', '#ccc');
     
     // Draw image clipped to the selected shape path
-    const img = new Image();
-    img.src = currentImageData;
-    img.onload = () => {
-        const w = img.width * cuttingState.zoom;
-        const h = img.height * cuttingState.zoom;
+    if (currentImage && currentImage.complete) {
+        const w = currentImage.width * cuttingState.zoom;
+        const h = currentImage.height * cuttingState.zoom;
         const x = 200 - w/2 + cuttingState.offsetX;
         const y = 200 - h/2 + cuttingState.offsetY;
 
@@ -727,9 +737,9 @@ function updateCuttingPreview() {
         ctx.beginPath();
         drawShapePath(ctx, 200, 200, 120, selectedShape);
         ctx.clip();
-        ctx.drawImage(img, x, y, w, h);
+        ctx.drawImage(currentImage, x, y, w, h);
         ctx.restore();
-    };
+    }
 }
 
 function drawShapePath(ctx, x, y, size, shape) {
