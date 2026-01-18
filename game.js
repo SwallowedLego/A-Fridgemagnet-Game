@@ -170,9 +170,9 @@ const fridges = {
 };
 
 const fridge = {
-    x: 300,  // centered: (1000 - 400) / 2
+    x: 400,  // centered: (1000 - 200) / 2
     y: 20,   // reduced top margin for bigger fridge
-    width: 400,
+    width: 200,
     height: 510
 };
 
