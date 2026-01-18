@@ -1,5 +1,5 @@
 // Matter.js Modules - werden direkt verwendet
-let Engine, World, Bodies, Body, Events, Constraint;
+let Engine, World, Bodies, Body, Events, Constraint, Mouse, MouseConstraint;
 
 let canvas;
 let ctx;
@@ -27,13 +27,14 @@ function initCanvas() {
 
 // Matter.js Engine initialisieren
 function initEngine() {
-    // Prüfe ob Matter.js geladen ist
     if (typeof Matter === 'undefined') {
         console.error('Matter.js nicht geladen!');
         setTimeout(() => initEngine(), 100);
         return;
     }
-    
+
+    console.log('✓ Matter.js geladen, initialisiere Engine...');
+
     // Initialisiere Matter.js Module
     Engine = Matter.Engine;
     World = Matter.World;
@@ -41,13 +42,36 @@ function initEngine() {
     Body = Matter.Body;
     Events = Matter.Events;
     Constraint = Matter.Constraint;
-    
+    Mouse = Matter.Mouse;
+    MouseConstraint = Matter.MouseConstraint;
+
     engine = Engine.create();
     world = engine.world;
-    world.gravity.y = 1; // Schwerkraft nach unten
-    
-    // Erstelle Wände und Boden
+    world.gravity.y = 1;
+
+    // Create mouse
+    const mouse = Mouse.create(canvas);
+    const mouseConstraint = MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+            stiffness: 0.2,
+            render: {
+                visible: false
+            }
+        }
+    });
+
+    World.add(world, mouseConstraint);
+
+    // Keep mouse in sync with Matter.js rendering
+    canvas.addEventListener('mousemove', () => {
+        mouse.position.x = mouse.mousedownPosition.x;
+        mouse.position.y = mouse.mousedownPosition.y;
+    });
+
     createBoundaries();
+    engineInitialized = true;
+    console.log('✓ Physics Engine initialisiert!');
 }
 
 function createBoundaries() {
@@ -516,59 +540,6 @@ let lastMouseY = 0;
 function initEventListeners() {
     if (!canvas) return;
     
-    canvas.addEventListener('mousedown', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        for (let i = gameState.magnets.length - 1; i >= 0; i--) {
-            if (gameState.magnets[i].contains(mouseX, mouseY)) {
-                draggedMagnet = gameState.magnets[i];
-                draggedMagnet.dragging = true;
-                draggedMagnet.stuckToFridge = false;
-                draggedMagnet.hasPlayedStickSound = false;
-                
-                // Mache Body wieder dynamisch falls er statisch war
-                Body.setStatic(draggedMagnet.body, false);
-                
-                // Erstelle Constraint für Dragging
-                draggedConstraint = Constraint.create({
-                    body: draggedMagnet.body,
-                    pointA: { x: mouseX, y: mouseY },
-                    length: 0,
-                    stiffness: 1
-                });
-                World.add(world, draggedConstraint);
-                
-                lastMouseX = mouseX;
-                lastMouseY = mouseY;
-                break;
-            }
-        }
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        if (draggedMagnet && draggedConstraint) {
-            draggedConstraint.pointA = { x: mouseX, y: mouseY };
-        }
-        
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        if (draggedMagnet && draggedConstraint) {
-            World.remove(world, draggedConstraint);
-            draggedConstraint = null;
-            draggedMagnet.dragging = false;
-            draggedMagnet = null;
-        }
-    });
-
 // ========== BUTTONS ==========
     const toggleDoor = document.getElementById('toggleDoor');
     if (toggleDoor) {
