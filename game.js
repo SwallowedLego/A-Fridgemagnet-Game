@@ -233,9 +233,9 @@ class Magnet {
         if (this.stuckToFridge || this.dragging) return; // Schon festgeklebt oder wird gedraggt
         
         const onFridge = this.isOnFridge();
-        const speed = Matter.Vector.magnitude(this.body.velocity);
         
-        if (onFridge && speed < 0.5) {
+        // Hafte immer am Kühlschrank wenn nicht gedraggt
+        if (onFridge) {
             this.stuckToFridge = true;
             Body.setStatic(this.body, true); // Mache Body statisch
             Body.setVelocity(this.body, { x: 0, y: 0 });
