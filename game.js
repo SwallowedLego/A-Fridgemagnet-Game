@@ -121,6 +121,17 @@ const PIXEL_BORDER = 'rgb(44, 62, 60)';
 // Cache für Kühlschrank-Bilder, damit der Sprite beim Drag nicht flackert
 const fridgeImageCache = {};
 
+// Erzeuge Alpha-Maske für den Kühlschrank (gefüllte Pixel = Stickfläche)
+function prepareFridgeMask(skinId, img) {
+    const off = document.createElement('canvas');
+    off.width = fridge.width;
+    off.height = fridge.height;
+    const offCtx = off.getContext('2d');
+    offCtx.drawImage(img, 0, 0, fridge.width, fridge.height);
+    const { data, width, height } = offCtx.getImageData(0, 0, fridge.width, fridge.height);
+    fridgeImageCache[skinId].mask = { data, width, height };
+}
+
 // Sound für Magnete
 function playMagnetSound() {
     // Dateiname korrigiert: audiomass-output.mp3 (liegt im Projekt-Root)
@@ -175,6 +186,8 @@ function getFridgeImage(skinId) {
 
     img.onload = () => {
         fridgeImageCache[skinId].loaded = true;
+        // Alpha-Maske vorbereiten für pixelgenaues Kleben
+        prepareFridgeMask(skinId, img);
         // No need to redraw, game loop handles it
     };
     img.onerror = () => {
@@ -222,23 +235,36 @@ class Magnet {
     }
     
     isOnFridge() {
-        // Berechne die Überlappungsfläche
+        // Maskendaten des aktuellen Kühlschranks
+        const cached = fridgeImageCache[gameState.fridgeSkin];
+        if (!cached || !cached.mask) return false;
+        const { data, width: mW, height: mH } = cached.mask;
+
+        // Überlappung berechnen
         const overlapLeft = Math.max(this.x, fridge.x);
         const overlapRight = Math.min(this.x + this.width, fridge.x + fridge.width);
         const overlapTop = Math.max(this.y, fridge.y);
         const overlapBottom = Math.min(this.y + this.height, fridge.y + fridge.height);
-        
-        // Keine Überlappung
-        if (overlapLeft >= overlapRight || overlapTop >= overlapBottom) {
-            return false;
+        if (overlapLeft >= overlapRight || overlapTop >= overlapBottom) return false;
+
+        let solidCount = 0;
+        const xStart = Math.floor(overlapLeft - fridge.x);
+        const xEnd = Math.ceil(overlapRight - fridge.x);
+        const yStart = Math.floor(overlapTop - fridge.y);
+        const yEnd = Math.ceil(overlapBottom - fridge.y);
+
+        for (let yy = yStart; yy < yEnd; yy++) {
+            if (yy < 0 || yy >= mH) continue;
+            const row = yy * mW;
+            for (let xx = xStart; xx < xEnd; xx++) {
+                if (xx < 0 || xx >= mW) continue;
+                const idx = (row + xx) * 4 + 3; // Alpha-Kanal
+                if (data[idx] > 10) solidCount++; // Pixel gehört zum Kühlschrank
+            }
         }
-        
-        // Berechne Überlappungsfläche
-        const overlapArea = (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
-        const magnetArea = this.width * this.height;
-        
-        // Mindestens 75% des Magnets muss auf dem Kühlschrank sein
-        return (overlapArea / magnetArea) >= 0.75;
+
+        const magnetAreaPixels = this.width * this.height;
+        return (solidCount / magnetAreaPixels) >= 0.75;
     }
     
     // Matter.js Physics Update - nur Sticking prüfen
