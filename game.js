@@ -264,7 +264,7 @@ class Magnet {
         }
 
         const magnetAreaPixels = this.width * this.height;
-        return (solidCount / magnetAreaPixels) >= 0.75;
+        return (solidCount / magnetAreaPixels) >= 0.5;
     }
     
     // Matter.js Physics Update - nur Sticking prüfen
@@ -320,13 +320,6 @@ class Magnet {
     
     remove() {
         World.remove(world, this.body);
-    }
-    
-    isOnFridge() {
-        return this.x + this.width > fridge.x &&
-               this.x < fridge.x + fridge.width &&
-               this.y + this.height > fridge.y &&
-               this.y < fridge.y + fridge.height;
     }
     
     update() {
@@ -696,7 +689,7 @@ function updateCuttingPreview() {
     // Draw shape
     drawShape(ctx, 200, 200, 120, selectedShape, '#ddd', '#ccc');
     
-    // Draw image
+    // Draw image clipped to the selected shape path
     const img = new Image();
     img.src = currentImageData;
     img.onload = () => {
@@ -704,10 +697,10 @@ function updateCuttingPreview() {
         const h = img.height * cuttingState.zoom;
         const x = 200 - w/2 + cuttingState.offsetX;
         const y = 200 - h/2 + cuttingState.offsetY;
-        
+
         ctx.save();
         ctx.beginPath();
-        drawShape(ctx, 200, 200, 120, selectedShape, null, null);
+        drawShapePath(ctx, 200, 200, 120, selectedShape);
         ctx.clip();
         ctx.drawImage(img, x, y, w, h);
         ctx.restore();
