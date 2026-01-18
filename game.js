@@ -1305,3 +1305,78 @@ function confirmDeleteMagnet() {
 // ========== INIT ==========
 // Wird durch DOMContentLoaded oben aufgerufen
 
+let fridgeMask = null; // { data: Uint8ClampedArray, width, height, offsetX, offsetY }
+
+// Erzeuge Alpha-Maske des Kühlschranks (nur opake Pixel zählen)
+function buildFridgeMask(fridgeImg, fridgeX, fridgeY, fridgeWidth, fridgeHeight) {
+    const off = document.createElement('canvas');
+    off.width = fridgeWidth;
+    off.height = fridgeHeight;
+    const ctx = off.getContext('2d');
+    ctx.clearRect(0, 0, fridgeWidth, fridgeHeight);
+    ctx.drawImage(fridgeImg, 0, 0, fridgeWidth, fridgeHeight);
+    const { data, width, height } = ctx.getImageData(0, 0, fridgeWidth, fridgeHeight);
+    fridgeMask = { data, width, height, offsetX: fridgeX, offsetY: fridgeY };
+    console.log('Fridge mask built:', width, height);
+}
+
+// Prüft, ob mind. 75% der Magnetfläche über opaken Fridge-Pixeln liegt
+function isOnFridgeMask(magnet) {
+    if (!fridgeMask || !magnet.body) return false;
+
+    const { data, width, height, offsetX, offsetY } = fridgeMask;
+
+    // Magnet-Bounding-Box in Masken-Koordinaten
+    const halfW = magnet.width / 2;
+    const halfH = magnet.height / 2;
+    const left = Math.floor(magnet.body.position.x - halfW - offsetX);
+    const right = Math.ceil(magnet.body.position.x + halfW - offsetX);
+    const top = Math.floor(magnet.body.position.y - halfH - offsetY);
+    const bottom = Math.ceil(magnet.body.position.y + halfH - offsetY);
+
+    // Clamping
+    const clampedLeft = Math.max(0, left);
+    const clampedTop = Math.max(0, top);
+    const clampedRight = Math.min(width, right);
+    const clampedBottom = Math.min(height, bottom);
+
+    if (clampedLeft >= clampedRight || clampedTop >= clampedBottom) return false;
+
+    const area = (clampedRight - clampedLeft) * (clampedBottom - clampedTop);
+    if (area === 0) return false;
+
+    let hit = 0;
+    // Zähle nur Pixel mit Alpha > 0
+    for (let y = clampedTop; y < clampedBottom; y++) {
+        let idx = (y * width + clampedLeft) * 4;
+        for (let x = clampedLeft; x < clampedRight; x++) {
+            if (data[idx + 3] > 0) hit++;
+            idx += 4;
+        }
+    }
+
+    const overlap = hit / area;
+    return overlap >= 0.75;
+}
+
+// Nutze die Maske im Haft-Check:
+function checkStickToFridge(magnet) {
+    if (magnet.dragging) return;
+
+    if (isOnFridgeMask(magnet)) {
+        // Haftet: Körper statisch machen und Sound abspielen
+        if (!magnet.stuckToFridge) {
+            magnet.stuckToFridge = true;
+            Matter.Body.setVelocity(magnet.body, { x: 0, y: 0 });
+            Matter.Body.setAngularVelocity(magnet.body, 0);
+            Matter.Body.setStatic(magnet.body, true);
+            playMagnetSound();
+        }
+    } else {
+        if (magnet.stuckToFridge) {
+            magnet.stuckToFridge = false;
+            Matter.Body.setStatic(magnet.body, false);
+        }
+    }
+}
+
