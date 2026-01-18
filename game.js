@@ -222,10 +222,23 @@ class Magnet {
     }
     
     isOnFridge() {
-        return this.x + this.width > fridge.x &&
-               this.x < fridge.x + fridge.width &&
-               this.y + this.height > fridge.y &&
-               this.y < fridge.y + fridge.height;
+        // Berechne die Überlappungsfläche
+        const overlapLeft = Math.max(this.x, fridge.x);
+        const overlapRight = Math.min(this.x + this.width, fridge.x + fridge.width);
+        const overlapTop = Math.max(this.y, fridge.y);
+        const overlapBottom = Math.min(this.y + this.height, fridge.y + fridge.height);
+        
+        // Keine Überlappung
+        if (overlapLeft >= overlapRight || overlapTop >= overlapBottom) {
+            return false;
+        }
+        
+        // Berechne Überlappungsfläche
+        const overlapArea = (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
+        const magnetArea = this.width * this.height;
+        
+        // Mindestens 75% des Magnets muss auf dem Kühlschrank sein
+        return (overlapArea / magnetArea) >= 0.75;
     }
     
     // Matter.js Physics Update - nur Sticking prüfen
