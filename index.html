@@ -160,41 +160,8 @@
 
     <div class="version-badge" aria-label="Version">v1.3.0</div>
 
-    <!-- Matter.js Physics Engine with multiple CDN fallbacks -->
-    <script>
-        // Flag for when Matter.js is loaded
-        window.matterLoaded = false;
-        
-        // Function to try loading from different CDNs
-        function loadMatter() {
-            // Try first CDN
-            var script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/matter-js@2.0.19/build/matter.min.js';
-            script.onload = function() {
-                console.log('✓ Matter.js loaded from jsDelivr');
-                window.matterLoaded = true;
-            };
-            script.onerror = function() {
-                console.log('jsDelivr failed, trying unpkg...');
-                // Try alternative CDN
-                var script2 = document.createElement('script');
-                script2.src = 'https://unpkg.com/matter-js@2.0.19/build/matter.min.js';
-                script2.onload = function() {
-                    console.log('✓ Matter.js loaded from unpkg');
-                    window.matterLoaded = true;
-                };
-                script2.onerror = function() {
-                    console.error('✗ Failed to load Matter.js from all CDNs!');
-                    alert('Error: Could not load Matter.js physics engine. Please check your internet connection.');
-                };
-                document.head.appendChild(script2);
-            };
-            document.head.appendChild(script);
-        }
-        
-        // Start loading
-        loadMatter();
-    </script>
+    <!-- Matter.js Physics Engine - Local Copy -->
+    <script src="matter.min.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
