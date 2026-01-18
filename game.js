@@ -68,10 +68,22 @@ function initEngine() {
         const body = event.body;
         // Finde das Magnet-Objekt
         const magnet = gameState.magnets.find(m => m.body === body);
-        if (magnet && magnet.stuckToFridge) {
-            magnet.stuckToFridge = false;
-            magnet.hasPlayedStickSound = false;
-            Body.setStatic(body, false);
+        if (magnet) {
+            magnet.dragging = true;
+            if (magnet.stuckToFridge) {
+                magnet.stuckToFridge = false;
+                magnet.hasPlayedStickSound = false;
+                Body.setStatic(body, false);
+            }
+        }
+    });
+
+    // Event: Wenn Body losgelassen wird
+    Events.on(mouseConstraint, 'enddrag', (event) => {
+        const body = event.body;
+        const magnet = gameState.magnets.find(m => m.body === body);
+        if (magnet) {
+            magnet.dragging = false;
         }
     });
 
@@ -173,10 +185,10 @@ function getFridgeImage(skinId) {
 }
 
 class Magnet {
-    constructor(imageData, x, y, series = 'Custom') {
+    constructor(imageData, x, y, series = 'Custom', size = 80) {
         this.imageData = imageData;
-        this.width = 80;
-        this.height = 80;
+        this.width = size;
+        this.height = size;
         this.dragging = false;
         this.series = series;
         this.id = Date.now() + Math.random();
@@ -218,7 +230,7 @@ class Magnet {
     
     // Matter.js Physics Update - nur Sticking prüfen
     checkStickToFridge() {
-        if (this.stuckToFridge) return; // Schon festgeklebt
+        if (this.stuckToFridge || this.dragging) return; // Schon festgeklebt oder wird gedraggt
         
         const onFridge = this.isOnFridge();
         const speed = Matter.Vector.magnitude(this.body.velocity);
@@ -1055,6 +1067,9 @@ function finalizeMagnet() {
         return;
     }
     
+    // Get magnet size from slider
+    const magnetSize = parseInt(document.getElementById('magnetSize').value) || 80;
+    
     // Erstelle Magnet mit allen Daten
     const img = new Image();
     img.src = currentImageData;
@@ -1066,21 +1081,21 @@ function finalizeMagnet() {
         
         // Erstelle Canvas mit der Form
         const magnetCanvas = document.createElement('canvas');
-        magnetCanvas.width = 80;
-        magnetCanvas.height = 80;
+        magnetCanvas.width = magnetSize;
+        magnetCanvas.height = magnetSize;
         const magnetCtx = magnetCanvas.getContext('2d');
         
         // Draw shape with image
         magnetCtx.save();
         magnetCtx.beginPath();
-        drawShapePath(magnetCtx, 40, 40, 80, selectedShape);
+        drawShapePath(magnetCtx, magnetSize/2, magnetSize/2, magnetSize, selectedShape);
         magnetCtx.clip();
         
-        // Scale image for 80x80
-        const scale = 80 / 160;
+        // Scale image for custom size
+        const scale = magnetSize / 160;
         magnetCtx.drawImage(img, 
-            (x - 200) * scale + 40, 
-            (y - 200) * scale + 40, 
+            (x - 200) * scale + magnetSize/2, 
+            (y - 200) * scale + magnetSize/2, 
             w * scale, 
             h * scale);
         magnetCtx.restore();
@@ -1099,14 +1114,15 @@ function finalizeMagnet() {
             precision: cuttingState.precision,
             shape: selectedShape,
             rarity: cuttingState.rarity,
-            value: cuttingState.value
+            value: cuttingState.value,
+            size: magnetSize
         });
         
         gameState.money += cuttingState.value;
         gameState.ownershipCount[series] = 1;
         
-        // Add magnet to fridge
-        gameState.magnets.push(new Magnet(magnetImage, 100 + Math.random() * 200, 100, series));
+        // Add magnet to fridge with custom size
+        gameState.magnets.push(new Magnet(magnetImage, 100 + Math.random() * 200, 100, series, magnetSize));
         
         closeImageModal();
         updateUI();
