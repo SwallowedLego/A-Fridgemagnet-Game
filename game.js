@@ -63,10 +63,16 @@ function initEngine() {
 
     World.add(world, mouseConstraint);
 
-    // Keep mouse in sync with Matter.js rendering
-    canvas.addEventListener('mousemove', () => {
-        mouse.position.x = mouse.mousedownPosition.x;
-        mouse.position.y = mouse.mousedownPosition.y;
+    // Event: Wenn ein Body gegriffen wird, mache ihn dynamisch
+    Events.on(mouseConstraint, 'startdrag', (event) => {
+        const body = event.body;
+        // Finde das Magnet-Objekt
+        const magnet = gameState.magnets.find(m => m.body === body);
+        if (magnet && magnet.stuckToFridge) {
+            magnet.stuckToFridge = false;
+            magnet.hasPlayedStickSound = false;
+            Body.setStatic(body, false);
+        }
     });
 
     createBoundaries();
