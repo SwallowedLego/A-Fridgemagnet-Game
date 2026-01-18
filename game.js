@@ -153,6 +153,27 @@ let gameState = {
     debugMode: false // Debug-Modus für Velocity-Anzeige
 };
 
+// Erlaubte Bildtypen für Upload
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
+// Einfache Hash-Funktion für Serien-Namen basierend auf Bildinhalt
+function computeHash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(16);
+}
+
+function getSeriesNameForImage(dataUrl) {
+    try {
+        const hash = computeHash(dataUrl).slice(0, 8);
+        return `SERIES-${hash}`;
+    } catch (_) {
+        return `SERIES-${Date.now()}`;
+    }
+}
+
 let fridgeOpen = false;
 let draggedMagnet = null;
 let draggedConstraint = null; // Für Dragging mit Matter.js
@@ -619,6 +640,10 @@ function initImageUploadListener() {
         imageUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                    alert('Supported formats: PNG, JPEG, WEBP');
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     currentImageData = event.target.result;
@@ -1134,8 +1159,8 @@ function finalizeMagnet() {
         
         const magnetImage = magnetCanvas.toDataURL();
         
-        // Add to inventory
-        const series = `${cuttingState.rarity.toUpperCase()}-${Date.now()}`;
+        // Add to inventory: group by image series (stable hash of original image data)
+        const series = getSeriesNameForImage(currentImageData);
         if (!gameState.inventory[series]) {
             gameState.inventory[series] = [];
         }
@@ -1151,7 +1176,7 @@ function finalizeMagnet() {
         });
         
         gameState.money += cuttingState.value;
-        gameState.ownershipCount[series] = 1;
+        gameState.ownershipCount[series] = (gameState.ownershipCount[series] || 0) + 1;
         
         // Add magnet to fridge with custom size
         gameState.magnets.push(new Magnet(magnetImage, 100 + Math.random() * 200, 100, series, magnetSize));
@@ -1166,6 +1191,10 @@ function finalizeMagnet() {
 document.getElementById('imageUpload').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+            alert('Supported formats: PNG, JPEG, WEBP');
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
             currentImageData = event.target.result;
