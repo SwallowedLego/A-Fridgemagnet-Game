@@ -195,6 +195,7 @@ class Magnet {
         
         if (onFridge && speed < 0.5) {
             this.stuckToFridge = true;
+            Body.setStatic(this.body, true); // Mache Body statisch
             Body.setVelocity(this.body, { x: 0, y: 0 });
             Body.setAngularVelocity(this.body, 0);
             if (!this.hasPlayedStickSound) {
@@ -526,6 +527,9 @@ function initEventListeners() {
                 draggedMagnet.dragging = true;
                 draggedMagnet.stuckToFridge = false;
                 draggedMagnet.hasPlayedStickSound = false;
+                
+                // Mache Body wieder dynamisch falls er statisch war
+                Body.setStatic(draggedMagnet.body, false);
                 
                 // Erstelle Constraint für Dragging
                 draggedConstraint = Constraint.create({
